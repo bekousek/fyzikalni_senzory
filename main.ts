@@ -38,27 +38,21 @@ namespace FyzikalniSenzory {
     // --- 2. SILOMĚR (HX711) ---
     // ==========================================
 
-    let hx711_dout = DigitalPin.P0;
-    let hx711_sck = DigitalPin.P1;
+    // Výchozí piny (pokud by někdo zavolal táru dřív než měření)
+    let hx711_dout = DigitalPin.P15;
+    let hx711_sck = DigitalPin.P16;
+
     let hx711_offset = 0;
-    let hx711_scale = 1; // Počet dílků na 1 Newton
 
-    /**
-     * Inicializace siloměru (HX711). Nutné volat při startu.
-     * @param doutPin Pin pro DT (Data)
-     * @param sckPin Pin pro SCK (Clock)
-     */
-    //% block="nastavit siloměr | DT %doutPin | SCK %sckPin"
-    //% group="2. Síla (Siloměr)"
-    //% weight=90
-    export function nastavitSilomer(doutPin: DigitalPin, sckPin: DigitalPin): void {
-        hx711_dout = doutPin;
-        hx711_sck = sckPin;
-        pins.digitalWritePin(hx711_sck, 0);
-    }
+    // --- ZDE UPRAV VÝCHOZÍ KALIBRACI ---
+    // Kolik dílků senzoru odpovídá 1 Newtonu?
+    // Toto číslo musíš změřit a přepsat ho sem natvrdo.
+    let hx711_scale = 1000;
+    // -----------------------------------
 
-    // Interní funkce pro čtení raw dat
+    // Interní funkce pro čtení
     function cistSurovaData(): number {
+        // Jednoduchý timeout
         let timeout = 1000;
         while (pins.digitalReadPin(hx711_dout) == 1 && timeout > 0) {
             timeout--;
@@ -67,6 +61,7 @@ namespace FyzikalniSenzory {
         if (timeout <= 0) return 0;
 
         let hodnota = 0;
+        // Čtení 24 bitů
         for (let i = 0; i < 24; i++) {
             pins.digitalWritePin(hx711_sck, 1);
             control.waitMicros(1);
@@ -78,11 +73,13 @@ namespace FyzikalniSenzory {
             }
         }
 
+        // 25. pulz (gain 128)
         pins.digitalWritePin(hx711_sck, 1);
         control.waitMicros(1);
         pins.digitalWritePin(hx711_sck, 0);
         control.waitMicros(1);
 
+        // Doplňkový kód
         if ((hodnota & 0x800000) > 0) {
             hodnota |= 0xFF000000;
         }
@@ -90,7 +87,41 @@ namespace FyzikalniSenzory {
     }
 
     /**
-     * Vynuluje siloměr (tára). Zavolejte, když na senzor nic nepůsobí.
+     * Změří sílu v Newtonech. 
+     * Piny se nastaví automaticky při měření.
+     * @param doutPin Pin pro DT (Data)
+     * @param sckPin Pin pro SCK (Clock)
+     */
+    //% block="změřit sílu (N) | DT %doutPin | SCK %sckPin"
+    //% group="2. Síla (Siloměr)"
+    //% weight=90
+    export function zmeritSilu(doutPin: DigitalPin, sckPin: DigitalPin): number {
+        // Aktualizace globálních pinů pro použití v Táře
+        hx711_dout = doutPin;
+        hx711_sck = sckPin;
+
+        let val = cistSurovaData();
+        // Ošetření dělení nulou
+        if (hx711_scale == 0) hx711_scale = 1;
+
+        return Math.idiv((val - hx711_offset), hx711_scale);
+    }
+
+    /**
+     * Změří sílu, pošle ji do grafu a počká 1 sekundu.
+     */
+    //% block="změřit sílu a kresli graf | DT %doutPin | SCK %sckPin"
+    //% group="2. Síla (Siloměr)"
+    //% weight=89
+    export function zmeritSiluAGraf(doutPin: DigitalPin, sckPin: DigitalPin): void {
+        let f = zmeritSilu(doutPin, sckPin);
+        serial.writeValue("Sila (N)", f);
+        basic.pause(1000);
+    }
+
+    /**
+     * Vynuluje siloměr (tára). 
+     * Použije piny nastavené v posledním bloku "změřit sílu".
      */
     //% block="vynulovat siloměr (tára)"
     //% group="2. Síla (Siloměr)"
@@ -105,38 +136,16 @@ namespace FyzikalniSenzory {
     }
 
     /**
-     * Kalibrace: Kolik surových jednotek odpovídá 1 Newtonu?
-     * @param meritko Počet dílků na 1 N (např. 1000)
+     * Pokročilá kalibrace: Kolik surových jednotek odpovídá 1 Newtonu?
+     * (Standardně skryto v sekci "Více")
+     * @param meritko Počet dílků na 1 N
      */
     //% block="kalibrovat siloměr (dílků na 1 N): %meritko"
     //% group="2. Síla (Siloměr)"
-    //% weight=87
+    //% advanced=true
     export function nastavitMeritko(meritko: number): void {
         if (meritko == 0) meritko = 1;
         hx711_scale = meritko;
-    }
-
-    /**
-     * Změří sílu v Newtonech.
-     */
-    //% block="změřit sílu (N)"
-    //% group="2. Síla (Siloměr)"
-    //% weight=86
-    export function zmeritSilu(): number {
-        let val = cistSurovaData();
-        return Math.idiv((val - hx711_offset), hx711_scale);
-    }
-
-    /**
-     * Změří sílu, pošle ji do grafu a počká 1 sekundu.
-     */
-    //% block="změřit sílu a kresli graf"
-    //% group="2. Síla (Siloměr)"
-    //% weight=85
-    export function zmeritSiluAGraf(): void {
-        let f = zmeritSilu();
-        serial.writeValue("Sila (N)", f);
-        basic.pause(1000);
     }
 
 
