@@ -1,61 +1,64 @@
 /**
- * Školní rozšíření pro práci se senzory: Sonar, Váha HX711, Teploměr DS18B20.
+ * Školní rozšíření pro fyzikální měření: Teplota, Síla, Vzdálenost.
  */
-//% weight=100 color=#d65cd6 icon="\uf0ad" block="Školní Senzory"
-namespace SkolniSenzory {
+//% weight=100 color=#d65cd6 icon="\uf0ad" block="Fyzikální senzory"
+namespace FyzikalniSenzory {
 
-    // --- SONAR (HC-SR04) ---
+    // ==========================================
+    // --- 1. TEPLOMĚR (DS18B20) ---
+    // ==========================================
 
     /**
-     * Změří vzdálenost pomocí ultrazvukového senzoru HC-SR04.
-     * @param trigPin Pin připojený na Trig
-     * @param echoPin Pin připojený na Echo
+     * Změří teplotu z DS18B20.
+     * Vyžaduje připojenou knihovnu dstemp.
+     * @param pin Pin připojený k senzoru
      */
-    //% block="změřit vzdálenost (cm) | Trig %trigPin | Echo %echoPin"
-    //% group="Sonar (Vzdálenost)"
-    export function zmeritVzdalenost(trigPin: DigitalPin, echoPin: DigitalPin): number {
-        // Reset triggeru
-        pins.digitalWritePin(trigPin, 0);
-        control.waitMicros(2);
-
-        // Vyslání impulsu (10 mikrosekund)
-        pins.digitalWritePin(trigPin, 1);
-        control.waitMicros(10);
-        pins.digitalWritePin(trigPin, 0);
-
-        // Čtení odezvy (max 23200 mikrosekund = cca 4 metry, pak timeout)
-        const d = pins.pulseIn(echoPin, PulseValue.High, 23200);
-
-        // Převod na cm (rychlost zvuku 340 m/s -> 0.034 cm/us -> děleno 2 (tam a zpět) -> d / 58)
-        let vzdalenost = Math.idiv(d, 58);
-
-        if (vzdalenost <= 0) return 0;
-        return vzdalenost;
+    //% block="změřit teplotu (°C) na pinu %pin"
+    //% group="1. Teplota"
+    //% weight=100
+    export function zmeritTeplotu(pin: DigitalPin): number {
+        return dstemp.celsius(pin);
     }
 
-    // --- VÁHA (HX711) ---
+    /**
+     * Změří teplotu, pošle ji do grafu a počká 1 sekundu.
+     * @param pin Pin připojený k senzoru
+     */
+    //% block="změřit teplotu a kresli graf (pin %pin)"
+    //% group="1. Teplota"
+    //% weight=99
+    export function zmeritTeplotuAGraf(pin: DigitalPin): void {
+        let t = zmeritTeplotu(pin);
+        serial.writeValue("Teplota (C)", t);
+        basic.pause(1000);
+    }
+
+
+    // ==========================================
+    // --- 2. SILOMĚR (HX711) ---
+    // ==========================================
 
     let hx711_dout = DigitalPin.P0;
     let hx711_sck = DigitalPin.P1;
     let hx711_offset = 0;
-    let hx711_scale = 1;
+    let hx711_scale = 1; // Počet dílků na 1 Newton
 
     /**
-     * Inicializace váhy HX711. Musí se zavolat při startu.
-     * @param doutPin Pin připojený na DT (Data)
-     * @param sckPin Pin připojený na SCK (Clock)
+     * Inicializace siloměru (HX711). Nutné volat při startu.
+     * @param doutPin Pin pro DT (Data)
+     * @param sckPin Pin pro SCK (Clock)
      */
-    //% block="nastavit váhu HX711 | DT %doutPin | SCK %sckPin"
-    //% group="Váha (HX711)"
+    //% block="nastavit siloměr | DT %doutPin | SCK %sckPin"
+    //% group="2. Síla (Siloměr)"
     //% weight=90
-    export function nastavitVahu(doutPin: DigitalPin, sckPin: DigitalPin): void {
+    export function nastavitSilomer(doutPin: DigitalPin, sckPin: DigitalPin): void {
         hx711_dout = doutPin;
         hx711_sck = sckPin;
         pins.digitalWritePin(hx711_sck, 0);
     }
 
+    // Interní funkce pro čtení raw dat
     function cistSurovaData(): number {
-        // Čekání na připravenost senzoru
         let timeout = 1000;
         while (pins.digitalReadPin(hx711_dout) == 1 && timeout > 0) {
             timeout--;
@@ -64,7 +67,6 @@ namespace SkolniSenzory {
         if (timeout <= 0) return 0;
 
         let hodnota = 0;
-        // Čtení 24 bitů
         for (let i = 0; i < 24; i++) {
             pins.digitalWritePin(hx711_sck, 1);
             control.waitMicros(1);
@@ -76,27 +78,24 @@ namespace SkolniSenzory {
             }
         }
 
-        // 25. pulz pro gain 128
         pins.digitalWritePin(hx711_sck, 1);
         control.waitMicros(1);
         pins.digitalWritePin(hx711_sck, 0);
         control.waitMicros(1);
 
-        // Ošetření záporných čísel (doplňkový kód)
         if ((hodnota & 0x800000) > 0) {
             hodnota |= 0xFF000000;
         }
-
         return hodnota;
     }
 
     /**
-     * Vynuluje váhu (tára).
+     * Vynuluje siloměr (tára). Zavolejte, když na senzor nic nepůsobí.
      */
-    //% block="vynulovat váhu (tára)"
-    //% group="Váha (HX711)"
-    //% weight=80
-    export function tarovatVahu(): void {
+    //% block="vynulovat siloměr (tára)"
+    //% group="2. Síla (Siloměr)"
+    //% weight=88
+    export function tarovatSilomer(): void {
         let suma = 0;
         for (let i = 0; i < 5; i++) {
             suma += cistSurovaData();
@@ -106,39 +105,78 @@ namespace SkolniSenzory {
     }
 
     /**
-     * Změří hmotnost.
+     * Kalibrace: Kolik surových jednotek odpovídá 1 Newtonu?
+     * @param meritko Počet dílků na 1 N (např. 1000)
      */
-    //% block="změřit hmotnost"
-    //% group="Váha (HX711)"
-    //% weight=70
-    export function zmeritHmotnost(): number {
-        let val = cistSurovaData();
-        return Math.idiv((val - hx711_offset), hx711_scale);
-    }
-
-    /**
-     * Nastaví kalibrační měřítko.
-     * @param meritko Číslo, kterým se dělí surová data (např. 1000)
-     */
-    //% block="kalibrovat měřítko váhy %meritko"
-    //% group="Váha (HX711)"
-    //% weight=60
+    //% block="kalibrovat siloměr (dílků na 1 N): %meritko"
+    //% group="2. Síla (Siloměr)"
+    //% weight=87
     export function nastavitMeritko(meritko: number): void {
         if (meritko == 0) meritko = 1;
         hx711_scale = meritko;
     }
 
-
-    // --- TEPLOMĚR (DS18B20) ---
+    /**
+     * Změří sílu v Newtonech.
+     */
+    //% block="změřit sílu (N)"
+    //% group="2. Síla (Siloměr)"
+    //% weight=86
+    export function zmeritSilu(): number {
+        let val = cistSurovaData();
+        return Math.idiv((val - hx711_offset), hx711_scale);
+    }
 
     /**
-     * Změří teplotu z DS18B20.
-     * @param pin Pin připojený k senzoru
+     * Změří sílu, pošle ji do grafu a počká 1 sekundu.
      */
-    //% block="změřit teplotu (°C) DS18B20 na pinu %pin"
-    //% group="Teploměr (DS18B20)"
-    export function zmeritTeplotu(pin: DigitalPin): number {
-        // Voláme funkci z importované knihovny dstemp
-        return dstemp.celsius(pin);
+    //% block="změřit sílu a kresli graf"
+    //% group="2. Síla (Siloměr)"
+    //% weight=85
+    export function zmeritSiluAGraf(): void {
+        let f = zmeritSilu();
+        serial.writeValue("Sila (N)", f);
+        basic.pause(1000);
+    }
+
+
+    // ==========================================
+    // --- 3. VZDÁLENOST (HC-SR04) ---
+    // ==========================================
+
+    /**
+     * Změří vzdálenost v cm.
+     * @param trigPin Pin Trig
+     * @param echoPin Pin Echo
+     */
+    //% block="změřit vzdálenost (cm) | Trig %trigPin | Echo %echoPin"
+    //% group="3. Vzdálenost (Sonar)"
+    //% weight=80
+    export function zmeritVzdalenost(trigPin: DigitalPin, echoPin: DigitalPin): number {
+        pins.digitalWritePin(trigPin, 0);
+        control.waitMicros(2);
+        pins.digitalWritePin(trigPin, 1);
+        control.waitMicros(10);
+        pins.digitalWritePin(trigPin, 0);
+
+        const d = pins.pulseIn(echoPin, PulseValue.High, 23200);
+        let vzdalenost = Math.idiv(d, 58);
+
+        if (vzdalenost <= 0) return 0;
+        return vzdalenost;
+    }
+
+    /**
+     * Změří vzdálenost, pošle ji do grafu a počká 1 sekundu.
+     * @param trigPin Pin Trig
+     * @param echoPin Pin Echo
+     */
+    //% block="změřit vzdálenost a kresli graf | Trig %trigPin | Echo %echoPin"
+    //% group="3. Vzdálenost (Sonar)"
+    //% weight=79
+    export function zmeritVzdalenostAGraf(trigPin: DigitalPin, echoPin: DigitalPin): void {
+        let dist = zmeritVzdalenost(trigPin, echoPin);
+        serial.writeValue("Vzdalenost (cm)", dist);
+        basic.pause(1000);
     }
 }
