@@ -1,7 +1,3 @@
-/**
- * Školní rozšíření pro fyzikální měření: Teplota, Síla, Vzdálenost.
- */
-//% weight=100 color=#d65cd6 icon="\uf0ad" block="Fyzikální senzory"
 namespace FyzikalniSenzory {
 
     // ==========================================
@@ -44,7 +40,7 @@ namespace FyzikalniSenzory {
     // !!! ZDE UPRAV KALIBRACI !!! 
     // Kolik dílků senzoru odpovídá 1 Newtonu?
     // Tip: Změř známé závaží, podívej se na raw hodnotu a vyděl to.
-    let my_scale = 1000;
+    let my_scale = -10300;
 
     // Pamatujeme si poslední piny pro funkci Tára
     let last_dout = DigitalPin.P15;
