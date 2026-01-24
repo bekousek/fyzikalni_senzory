@@ -174,7 +174,17 @@ namespace FyzikalniSenzory {
         if (vzdalenost <= 0) return 0;
         return vzdalenost;
     }
-
+    /**
+         * DEBUG: Přečte přímo surová data ze senzoru bez úprav.
+         * Pokud vrátí 0, senzor nekomunikuje.
+         */
+    //% block="DEBUG: číst surová data | DT %doutPin | SCK %sckPin"
+    //% group="2. Síla (Siloměr)"
+    export function debugRaw(doutPin: DigitalPin, sckPin: DigitalPin): number {
+        hx711_dout = doutPin;
+        hx711_sck = sckPin;
+        return cistSurovaData();
+    }
     /**
      * Změří vzdálenost, pošle ji do grafu a počká 1 sekundu.
      * @param trigPin Pin Trig
