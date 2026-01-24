@@ -5,7 +5,8 @@
         "core": "*",
         "radio": "*",
         "microphone": "*",
-        "microbit-dstemp": "github:bsiever/microbit-dstemp#v0.1.26"
+        "microbit-dstemp": "github:bsiever/microbit-dstemp#v0.1.26",
+        "pxt-HX711": "github:daferdur/pxt-myhx711#v1.0.18"
     },
     "files": [
         "main.blocks",

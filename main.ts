@@ -38,57 +38,21 @@ namespace FyzikalniSenzory {
     // --- 2. SILOMĚR (HX711) ---
     // ==========================================
 
-    // Výchozí piny (pokud by někdo zavolal táru dřív než měření)
-    let hx711_dout = DigitalPin.P15;
-    let hx711_sck = DigitalPin.P16;
+    // Proměnné pro naši logiku (offset a měřítko v Newtonech)
+    let my_offset = 0;
 
-    let hx711_offset = 0;
-
-    // --- ZDE UPRAV VÝCHOZÍ KALIBRACI ---
+    // !!! ZDE UPRAV KALIBRACI !!! 
     // Kolik dílků senzoru odpovídá 1 Newtonu?
-    // Toto číslo musíš změřit a přepsat ho sem natvrdo.
-    let hx711_scale = 1000;
-    // -----------------------------------
+    // Tip: Změř známé závaží, podívej se na raw hodnotu a vyděl to.
+    let my_scale = 1000;
 
-    // Interní funkce pro čtení
-    function cistSurovaData(): number {
-        // Jednoduchý timeout
-        let timeout = 1000;
-        while (pins.digitalReadPin(hx711_dout) == 1 && timeout > 0) {
-            timeout--;
-            control.waitMicros(1);
-        }
-        if (timeout <= 0) return 0;
-
-        let hodnota = 0;
-        // Čtení 24 bitů
-        for (let i = 0; i < 24; i++) {
-            pins.digitalWritePin(hx711_sck, 1);
-            control.waitMicros(1);
-            hodnota = hodnota << 1;
-            pins.digitalWritePin(hx711_sck, 0);
-            control.waitMicros(1);
-            if (pins.digitalReadPin(hx711_dout) == 1) {
-                hodnota++;
-            }
-        }
-
-        // 25. pulz (gain 128)
-        pins.digitalWritePin(hx711_sck, 1);
-        control.waitMicros(1);
-        pins.digitalWritePin(hx711_sck, 0);
-        control.waitMicros(1);
-
-        // Doplňkový kód
-        if ((hodnota & 0x800000) > 0) {
-            hodnota |= 0xFF000000;
-        }
-        return hodnota;
-    }
+    // Pamatujeme si poslední piny pro funkci Tára
+    let last_dout = DigitalPin.P15;
+    let last_sck = DigitalPin.P16;
 
     /**
      * Změří sílu v Newtonech. 
-     * Piny se nastaví automaticky při měření.
+     * Automaticky nastaví piny a změří hodnotu.
      * @param doutPin Pin pro DT (Data)
      * @param sckPin Pin pro SCK (Clock)
      */
@@ -96,15 +60,26 @@ namespace FyzikalniSenzory {
     //% group="2. Síla (Siloměr)"
     //% weight=90
     export function zmeritSilu(doutPin: DigitalPin, sckPin: DigitalPin): number {
-        // Aktualizace globálních pinů pro použití v Táře
-        hx711_dout = doutPin;
-        hx711_sck = sckPin;
+        // 1. Uložení pinů pro budoucí použití (tára)
+        last_dout = doutPin;
+        last_sck = sckPin;
 
-        let val = cistSurovaData();
-        // Ošetření dělení nulou
-        if (hx711_scale == 0) hx711_scale = 1;
+        // 2. Nastavení pinů v externí knihovně HX711
+        // Používáme přesné názvy z tvého souboru HX711.ts
+        HX711.SetPIN_DOUT(doutPin);
+        HX711.SetPIN_SCK(sckPin);
 
-        return Math.idiv((val - hx711_offset), hx711_scale);
+        // 3. Inicializace (nastaví gain 128 a probudí čip)
+        HX711.begin();
+
+        // 4. Přečtení surové hodnoty
+        // Funkce read() v té knihovně vrací surové číslo (raw 24-bit integer)
+        let raw_val = HX711.read();
+
+        // 5. Výpočet Newtonů: (raw - offset) / měřítko
+        if (my_scale == 0) my_scale = 1;
+
+        return Math.idiv((raw_val - my_offset), my_scale);
     }
 
     /**
@@ -121,31 +96,35 @@ namespace FyzikalniSenzory {
 
     /**
      * Vynuluje siloměr (tára). 
-     * Použije piny nastavené v posledním bloku "změřit sílu".
+     * Použije piny, které byly nastaveny v posledním měření.
      */
     //% block="vynulovat siloměr (tára)"
     //% group="2. Síla (Siloměr)"
     //% weight=88
     export function tarovatSilomer(): void {
+        // Pro jistotu znovu nastavíme piny (kdyby se mezitím změnily)
+        HX711.SetPIN_DOUT(last_dout);
+        HX711.SetPIN_SCK(last_sck);
+        HX711.begin();
+
         let suma = 0;
-        for (let i = 0; i < 5; i++) {
-            suma += cistSurovaData();
+        // Uděláme 3 měření pro průměr
+        for (let i = 0; i < 3; i++) {
+            suma += HX711.read();
             basic.pause(50);
         }
-        hx711_offset = Math.idiv(suma, 5);
+        my_offset = Math.idiv(suma, 3);
     }
 
     /**
      * Pokročilá kalibrace: Kolik surových jednotek odpovídá 1 Newtonu?
-     * (Standardně skryto v sekci "Více")
-     * @param meritko Počet dílků na 1 N
      */
     //% block="kalibrovat siloměr (dílků na 1 N): %meritko"
     //% group="2. Síla (Siloměr)"
     //% advanced=true
     export function nastavitMeritko(meritko: number): void {
         if (meritko == 0) meritko = 1;
-        hx711_scale = meritko;
+        my_scale = meritko;
     }
 
 
@@ -174,17 +153,7 @@ namespace FyzikalniSenzory {
         if (vzdalenost <= 0) return 0;
         return vzdalenost;
     }
-    /**
-         * DEBUG: Přečte přímo surová data ze senzoru bez úprav.
-         * Pokud vrátí 0, senzor nekomunikuje.
-         */
-    //% block="DEBUG: číst surová data | DT %doutPin | SCK %sckPin"
-    //% group="2. Síla (Siloměr)"
-    export function debugRaw(doutPin: DigitalPin, sckPin: DigitalPin): number {
-        hx711_dout = doutPin;
-        hx711_sck = sckPin;
-        return cistSurovaData();
-    }
+
     /**
      * Změří vzdálenost, pošle ji do grafu a počká 1 sekundu.
      * @param trigPin Pin Trig
