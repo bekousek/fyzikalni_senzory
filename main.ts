@@ -156,7 +156,7 @@ namespace FyzikalniSenzory {
         else serial.writeValue("Vzdalenost (m)", val);
 
         // ZVÝŠENÁ PAUZA DLE POŽADAVKU
-        basic.pause(200);
+        basic.pause(100);
     }
 
     // ==========================================
@@ -221,7 +221,7 @@ namespace FyzikalniSenzory {
         serial.writeValue("Poloha (cm)", _lastS);
 
         // ZVÝŠENÁ PAUZA
-        basic.pause(200);
+        basic.pause(100);
     }
 }
 
