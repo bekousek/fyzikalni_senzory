@@ -62,7 +62,7 @@ namespace FyzikalniSenzory {
     // ==========================================
 
     // Offset necháme 0. Tára se musí provést softwarově po startu.
-    let my_offset = 0;
+    let my_offset = 801.7;
 
     // Kalibrace dle tvého měření
     let my_scale = -10578;
