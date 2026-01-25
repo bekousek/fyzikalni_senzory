@@ -32,7 +32,7 @@ Senzor DS18B20 vyžaduje pull-up rezistor (4k7) mezi datovým pinem a napájení
 * **Červený:** 3V
 * **Žlutý/Bílý (Data):** Libovolný Pin (např. P0)
 
-Osvědčilo se mi rezistor připájet přímo k jednomu z krokodýlů a propojit ho vodičem s druhým krokodýlem.
+Osvědčilo se mi rezistor připájet přímo k jednomu z krokodýlů a propojit ho vodičem s druhým krokodýlem. Rezistor se tak schová do "punčochy" krokodýlu a nehrozí, že se někde utrhne.
 
 <img width="4000" height="2252" alt="Fotografie připojeného rezistoru" src="https://github.com/user-attachments/assets/9cd6e67a-8ac1-4d07-834f-77c5b41aad54" />
 
