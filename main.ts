@@ -61,7 +61,6 @@ namespace FyzikalniSenzory {
         HX711.SetPIN_SCK(sckPin);
         HX711.begin();
 
-        // Medián (3 hodnoty)
         let val1 = HX711.read();
         let val2 = HX711.read();
         let val3 = HX711.read();
@@ -112,29 +111,27 @@ namespace FyzikalniSenzory {
 
 
     // ==========================================
-    // --- 3. VZDÁLENOST ---
+    // --- 3. VZDÁLENOST A RYCHLOST (SONAR) ---
     // ==========================================
 
-    // Globální proměnné pro paměť (sdílené mezi vzdáleností a rychlostí)
+    // Globální paměť sdílená všemi bloky sonaru
     let _lastS = 0;
     let _lastT = 0;
+    let _lastV = 0; // Pamatujeme si i poslední rychlost
 
     /**
-     * Změří vzdálenost.
+     * Změří vzdálenost. Zároveň aktualizuje data pro výpočet rychlosti.
      */
     //% block="změřená vzdálenost v %jednotka | Trig %trigPin | Echo %echoPin"
-    //% group="3. Vzdálenost"
+    //% group="3. Vzdálenost (Sonar)"
     //% weight=80
     //% parts="sonar"
     export function zmeritVzdalenost(jednotka: VzdalenostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
-        // Měříme v cm (1 = Centimeters)
-        let s = InternalSonar.ping(trigPin, echoPin, 1);
+        // Voláme sdílenou funkci, která změří S, spočítá V a uloží vše do globálních proměnných
+        updateSonarData(trigPin, echoPin);
 
-        // Aktualizace paměti, aby přechod na měření rychlosti byl plynulý
-        if (s > 0) {
-            _lastS = s;
-            _lastT = control.millis();
-        }
+        // Vracíme jen to, co už máme v paměti (_lastS)
+        let s = _lastS;
 
         switch (jednotka) {
             case VzdalenostniJednotka.Cm:
@@ -147,82 +144,97 @@ namespace FyzikalniSenzory {
     }
 
     //% block="změřit vzdálenost a kreslit graf v %jednotka | Trig %trigPin | Echo %echoPin"
-    //% group="3. Vzdálenost"
+    //% group="3. Vzdálenost (Sonar)"
     //% weight=79
+    //% blockGap=30
     export function zmeritVzdalenostAGraf(jednotka: VzdalenostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): void {
+        // Změříme a aktualizujeme
         let val = zmeritVzdalenost(jednotka, trigPin, echoPin);
 
         if (jednotka == VzdalenostniJednotka.Cm) serial.writeValue("Vzdalenost (cm)", val);
         else serial.writeValue("Vzdalenost (m)", val);
 
-        // ZVÝŠENÁ PAUZA DLE POŽADAVKU
         basic.pause(100);
     }
 
-    // ==========================================
-    // --- 4. RYCHLOST (POKROČILÉ) ---
-    // ==========================================
-
     /**
-     * Vypočítá rychlost. Tento blok sám měří vzdálenost a počítá změnu.
+     * Vrátí rychlost. Využívá stejný měřící cyklus jako vzdálenost.
      */
     //% block="změřená rychlost v %jednotka | Trig %trigPin | Echo %echoPin"
-    //% group="4. Rychlost (Pokročilé)"
+    //% group="3. Vzdálenost (Sonar)"
     //% weight=70
     export function zmeritRychlost(jednotka: RychlostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
-        // 1. Změříme aktuální data
-        let s = InternalSonar.ping(trigPin, echoPin, 1); // cm
-        let t = control.millis(); // ms
+        // Změříme S, spočítáme V, uložíme
+        updateSonarData(trigPin, echoPin);
 
-        let v_cm_s = 0; // Výchozí rychlost (když stojíme nebo je chyba)
+        // Vytáhneme vypočtenou rychlost z paměti
+        let v_cm_s = _lastV;
 
-        // 2. Aplikace tvého filtru
-        // - s musí být v rozmezí 0-400 (platné měření)
-        // - _lastS musí být > 0 (tzn. minulé měření bylo platné)
-        if (s > 0 && s < 400 && _lastS > 0) {
-
-            // Časový rozdíl v sekundách
-            let dt = (t - _lastT) / 1000.0;
-
-            // Filtr času: aspoň 20 ms rozestup, jinak je to šum
-            if (dt > 0.02) {
-                // Výpočet rychlosti v cm/s
-                // Může vyjít záporná (přibližování) nebo kladná (vzdalování)
-                v_cm_s = (s - _lastS) / dt;
-            }
-        }
-
-        // 3. Aktualizace paměti
-        // Ukládáme vždy, pokud je měření platné, nebo pokud je to jen reset
-        _lastS = s;
-        _lastT = t;
-
-        // 4. Převod jednotek
         if (jednotka == RychlostniJednotka.Ms) {
-            return v_cm_s / 100.0; // cm/s -> m/s
+            return v_cm_s / 100.0; // m/s
         } else {
-            return (v_cm_s / 100.0) * 3.6; // m/s -> km/h
+            return (v_cm_s / 100.0) * 3.6; // km/h
         }
     }
 
     //% block="změřit rychlost a kreslit graf v %jednotka | Trig %trigPin | Echo %echoPin"
-    //% group="4. Rychlost (Pokročilé)"
+    //% group="3. Vzdálenost (Sonar)"
     //% weight=69
     export function zmeritRychlostAGraf(jednotka: RychlostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): void {
-        // Zavoláme funkci pro rychlost (ta si sama změří i vzdálenost a aktualizuje stav)
+        // Tento blok zavolá zmeritRychlost -> ta zavolá updateSonarData -> ta změří a spočítá
         let v = zmeritRychlost(jednotka, trigPin, echoPin);
 
-        // Do grafu pošleme rychlost
         if (jednotka == RychlostniJednotka.Ms) serial.writeValue("Rychlost (m/s)", v);
         else serial.writeValue("Rychlost (km/h)", v);
 
-        // A pošleme tam I VZDÁLENOST, abys viděl souvislost (jestli rychlost sedí k pohybu)
-        // Použijeme _lastS, což je hodnota, ze které se rychlost počítala
+        // Pro kontrolu posíláme i polohu (aby žák viděl souvislost)
         serial.writeValue("Poloha (cm)", _lastS);
 
-        // ZVÝŠENÁ PAUZA
         basic.pause(100);
     }
+
+    // =========================================================================
+    // --- SDÍLENÉ JÁDRO PRO SONAR ---
+    // =========================================================================
+    // Tato funkce dělá všechnu práci. Bloky nahoře si z ní jen berou výsledky.
+
+    function updateSonarData(trig: DigitalPin, echo: DigitalPin): void {
+        // 1. Změříme aktuální čas a vzdálenost
+        let t = control.millis();
+        let s = InternalSonar.ping(trig, echo, 1); // cm
+
+        // Pokud je senzor mimo rozsah nebo chyba, neaktualizujeme nic a končíme
+        // (V paměti zůstanou poslední platné hodnoty)
+        if (s == 0 || s >= 400) return;
+
+        // Inicializace při prvním spuštění
+        if (_lastS == 0 && _lastT == 0) {
+            _lastS = s;
+            _lastT = t;
+            _lastV = 0;
+            return;
+        }
+
+        // 2. Výpočet rychlosti (pokud uplynul dostatečný čas)
+        let dt = (t - _lastT) / 1000.0; // sekundy
+
+        // Filtr času: aspoň 20 ms, aby to nebyl šum
+        // (Ale protože voláme pause(100), bude to typicky kolem 0.1s)
+        if (dt > 0.02) {
+            // cm/s = (rozdíl drah) / (rozdíl časů)
+            let v = (s - _lastS) / dt;
+
+            // Uložíme vypočtenou rychlost do globální paměti
+            _lastV = v;
+
+            // Posuneme čas a dráhu pro příští kolo
+            _lastS = s;
+            _lastT = t;
+        }
+        // Pokud dt <= 0.02, neděláme nic (čekáme na další cyklus pro větší přesnost),
+        // ale _lastS a _lastT neměníme, aby se rozdíl nasčítal.
+    }
+
 }
 
 // =============================================================================
