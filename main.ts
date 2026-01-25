@@ -162,7 +162,7 @@ namespace FyzikalniSenzory {
         else if (jednotka == VzdalenostniJednotka.M) serial.writeValue("Vzdalenost (m)", val);
         else serial.writeValue("Cas (ms)", val);
 
-        basic.pause(50);
+        basic.pause(200);
     }
 
     /**
@@ -179,7 +179,6 @@ namespace FyzikalniSenzory {
         // 2. Měření "t" (desetiny sekundy)
         let t = control.millis() / 10;
 
-        if (s == 0) return 0; // Chyba senzoru
 
         // Inicializace
         if (lastT == 0) {
@@ -225,7 +224,7 @@ namespace FyzikalniSenzory {
         if (jednotka == RychlostniJednotka.Ms) serial.writeValue("Rychlost (m/s)", v);
         else serial.writeValue("Rychlost (km/h)", v);
 
-        basic.pause(100);
+        basic.pause(200);
     }
 }
 
