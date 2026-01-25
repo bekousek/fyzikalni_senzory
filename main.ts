@@ -6,12 +6,11 @@ namespace FyzikalniSenzory {
 
     /**
      * Změří teplotu z DS18B20.
-     * Vyžaduje připojenou knihovnu dstemp.
-     * @param pin Pin připojený k senzoru
      */
     //% block="změřit teplotu (°C) na pinu %pin"
     //% group="1. Teplota"
     //% weight=100
+    //% parts="ds18b20"
     export function zmeritTeplotu(pin: DigitalPin): number {
         return dstemp.celsius(pin);
     }
@@ -130,13 +129,13 @@ namespace FyzikalniSenzory {
 
     /**
      * Změří vzdálenost v cm.
-     * @param trigPin Pin Trig
-     * @param echoPin Pin Echo
      */
     //% block="změřit vzdálenost (cm) | Trig %trigPin | Echo %echoPin"
     //% group="3. Vzdálenost (Sonar)"
     //% weight=80
+    //% parts="sonar"
     export function zmeritVzdalenost(trigPin: DigitalPin, echoPin: DigitalPin): number {
+        // ... (kód beze změny)
         pins.digitalWritePin(trigPin, 0);
         control.waitMicros(2);
         pins.digitalWritePin(trigPin, 1);
