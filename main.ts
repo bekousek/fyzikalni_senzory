@@ -62,9 +62,9 @@ namespace FyzikalniSenzory {
     // ==========================================
 
     // Offset necháme 0. Tára se musí provést softwarově po startu.
-    let my_offset = 801.8;
+    let my_offset = 0;
 
-    // NOVÉ KALIBRAČNÍ ČÍSLO (vypočteno z tvého měření 300g)
+    // Kalibrace dle tvého měření
     let my_scale = -10578;
 
     let last_dout = DigitalPin.P15;
@@ -87,19 +87,17 @@ namespace FyzikalniSenzory {
         HX711.SetPIN_SCK(sckPin);
         HX711.begin();
 
-        // MEDIÁNOVÝ FILTR (3 hodnoty)
+        // MEDIÁNOVÝ FILTR (3 hodnoty) - Eliminuje náhodné ústřely
         let val1 = HX711.read();
         let val2 = HX711.read();
         let val3 = HX711.read();
 
-        // Najdeme medián
         let maxVal = Math.max(val1, Math.max(val2, val3));
         let minVal = Math.min(val1, Math.min(val2, val3));
         let raw_median = (val1 + val2 + val3) - maxVal - minVal;
 
         if (my_scale == 0) my_scale = 1;
 
-        // Výpočet
         let val = (raw_median - my_offset) / my_scale;
 
         // Zaokrouhlení na 1 desetinné místo
@@ -130,15 +128,12 @@ namespace FyzikalniSenzory {
         HX711.SetPIN_SCK(last_sck);
         HX711.begin();
 
-        // Přečteme 5 hodnot a seřadíme je
         let pole: number[] = [];
         for (let i = 0; i < 5; i++) {
             pole.push(HX711.read());
             basic.pause(10);
         }
         pole.sort((a, b) => a - b);
-
-        // Uložíme medián (prostřední prvek) jako nový offset
         my_offset = pole[2];
     }
 
@@ -169,23 +164,20 @@ namespace FyzikalniSenzory {
     //% weight=80
     //% parts="sonar"
     export function zmeritVzdalenost(jednotka: VzdalenostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
-        pins.digitalWritePin(trigPin, 0);
-        control.waitMicros(2);
-        pins.digitalWritePin(trigPin, 1);
-        control.waitMicros(10);
-        pins.digitalWritePin(trigPin, 0);
+        // Tady používáme interní funkci, ale pro blok vracíme hezká čísla
+        let raw_cm = measureRawCm(trigPin, echoPin);
 
-        const d = pins.pulseIn(echoPin, PulseValue.High, 23500);
-
-        if (d <= 0) return 0;
+        if (raw_cm <= 0) return 0;
 
         switch (jednotka) {
             case VzdalenostniJednotka.Cm:
-                return Math.floor(d / 58);
+                return Math.floor(raw_cm);
             case VzdalenostniJednotka.M:
-                return Math.round((d / 5800) * 100) / 100;
+                return Math.round((raw_cm / 100) * 100) / 100;
             case VzdalenostniJednotka.Ms:
-                return Math.round((d / 1000) * 10) / 10;
+                // raw_cm = duration / 58.0 -> duration = raw_cm * 58.0
+                // čas v ms = duration / 1000
+                return Math.round((raw_cm * 58.0 / 1000) * 10) / 10;
             default:
                 return 0;
         }
@@ -213,7 +205,8 @@ namespace FyzikalniSenzory {
     }
 
     /**
-     * Změří okamžitou rychlost.
+     * Změří okamžitou rychlost SUROVĚ (bez filtrace).
+     * Měří vzdálenost v čase T1 a T2 (rozdíl 40ms) a vypočítá změnu.
      */
     //% block="změřená rychlost v %jednotka | Trig %trigPin | Echo %echoPin"
     //% group="3. Vzdálenost (Sonar)"
@@ -222,24 +215,32 @@ namespace FyzikalniSenzory {
         let t1 = input.runningTime();
         let d1 = measureRawCm(trigPin, echoPin);
 
-        basic.pause(100);
+        // Zkrácená pauza pro rychlejší odezvu (40 ms)
+        // Méně než 40 ms už riskuje, že se smíchají odrazy zvuku
+        basic.pause(40);
 
         let t2 = input.runningTime();
         let d2 = measureRawCm(trigPin, echoPin);
 
-        let dt = (t2 - t1) / 1000.0;
+        // Ochrana proti chybám senzoru:
+        // Pokud senzor ztratí signál (vrátí 0), nelze počítat rychlost.
+        if (d1 <= 0 || d2 <= 0) return 0;
+
+        let dt = (t2 - t1) / 1000.0; // čas v sekundách
         if (dt <= 0) return 0;
 
+        // v = dráha / čas
         let v_cm_s = (d2 - d1) / dt;
         let result = 0;
 
         if (jednotka == RychlostniJednotka.Ms) {
-            result = v_cm_s / 100.0;
+            result = v_cm_s / 100.0; // m/s
         } else {
-            result = (v_cm_s / 100.0) * 3.6;
+            result = (v_cm_s / 100.0) * 3.6; // km/h
         }
 
-        return Math.round(result * 10) / 10;
+        // Žádné zaokrouhlování (raw data)
+        return result;
     }
 
     /**
@@ -256,9 +257,10 @@ namespace FyzikalniSenzory {
         } else {
             serial.writeValue("Rychlost (km/h)", v);
         }
-        basic.pause(50);
+        basic.pause(40);
     }
 
+    // Interní funkce pro přesné měření (vrací float cm nebo 0 při chybě)
     function measureRawCm(trigPin: DigitalPin, echoPin: DigitalPin): number {
         pins.digitalWritePin(trigPin, 0);
         control.waitMicros(2);
@@ -266,7 +268,9 @@ namespace FyzikalniSenzory {
         control.waitMicros(10);
         pins.digitalWritePin(trigPin, 0);
 
+        // Timeout 23500 micros = cca 4 metry
         const d = pins.pulseIn(echoPin, PulseValue.High, 23500);
+
         if (d <= 0) return 0;
         return d / 58.0;
     }
