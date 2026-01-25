@@ -4,9 +4,6 @@
 //% weight=100 color=#2E8B57 icon="\uf0c3" block="Fyzikální senzory"
 namespace FyzikalniSenzory {
 
-    /**
-     * Jednotky pro měření rychlosti
-     */
     export enum RychlostniJednotka {
         //% block="m/s"
         Ms,
@@ -14,9 +11,6 @@ namespace FyzikalniSenzory {
         Kmh
     }
 
-    /**
-     * Jednotky pro měření vzdálenosti
-     */
     export enum VzdalenostniJednotka {
         //% block="cm"
         Cm,
@@ -30,11 +24,6 @@ namespace FyzikalniSenzory {
     // --- 1. TEPLOMĚR (DS18B20) ---
     // ==========================================
 
-    /**
-     * Změří teplotu z DS18B20.
-     * Vyžaduje připojenou knihovnu dstemp.
-     * @param pin Pin připojený k senzoru
-     */
     //% block="změřená teplota (°C) na pinu %pin"
     //% group="1. Teplota"
     //% weight=100
@@ -43,10 +32,6 @@ namespace FyzikalniSenzory {
         return dstemp.celsius(pin);
     }
 
-    /**
-     * Změří teplotu, pošle ji do grafu a počká.
-     * @param pin Pin připojený k senzoru
-     */
     //% block="změřit teplotu a kreslit graf (pin %pin)"
     //% group="1. Teplota"
     //% weight=99
@@ -61,21 +46,13 @@ namespace FyzikalniSenzory {
     // --- 2. SILOMĚR (HX711) ---
     // ==========================================
 
-    // Offset necháme 0. Tára se musí provést softwarově po startu.
-    let my_offset = 801.8;
-
-    // Kalibrace dle tvého měření
+    // Kalibrace (dle tvého posledního měření)
+    let my_offset = 0;
     let my_scale = -10578;
 
     let last_dout = DigitalPin.P15;
     let last_sck = DigitalPin.P16;
 
-    /**
-     * Změří sílu v Newtonech (na 1 desetinné místo).
-     * Používá MEDIÁN ze 3 hodnot pro odstranění chyb (spiků).
-     * @param doutPin Pin pro DT (Data)
-     * @param sckPin Pin pro SCK (Clock)
-     */
     //% block="změřená síla (N) | DT %doutPin | SCK %sckPin"
     //% group="2. Síla"
     //% weight=90
@@ -87,7 +64,7 @@ namespace FyzikalniSenzory {
         HX711.SetPIN_SCK(sckPin);
         HX711.begin();
 
-        // MEDIÁNOVÝ FILTR (3 hodnoty) - Eliminuje náhodné ústřely
+        // Medián (3 hodnoty)
         let val1 = HX711.read();
         let val2 = HX711.read();
         let val3 = HX711.read();
@@ -97,16 +74,11 @@ namespace FyzikalniSenzory {
         let raw_median = (val1 + val2 + val3) - maxVal - minVal;
 
         if (my_scale == 0) my_scale = 1;
-
         let val = (raw_median - my_offset) / my_scale;
 
-        // Zaokrouhlení na 1 desetinné místo
         return Math.round(val * 10) / 10;
     }
 
-    /**
-     * Změří sílu, pošle ji do grafu a počká.
-     */
     //% block="změřit sílu a kreslit graf | DT %doutPin | SCK %sckPin"
     //% group="2. Síla"
     //% weight=89
@@ -116,10 +88,6 @@ namespace FyzikalniSenzory {
         basic.pause(50);
     }
 
-    /**
-     * Vynuluje siloměr (tára). 
-     * Používá medián pro spolehlivé nulování.
-     */
     //% block="vynulovat siloměr (tára)"
     //% group="2. Síla"
     //% weight=88
@@ -137,9 +105,6 @@ namespace FyzikalniSenzory {
         my_offset = pole[2];
     }
 
-    /**
-     * Pokročilá kalibrace: Kolik surových jednotek odpovídá 1 Newtonu?
-     */
     //% block="kalibrovat siloměr (dílků na 1 N): %meritko"
     //% group="2. Síla"
     //% advanced=true
@@ -150,22 +115,27 @@ namespace FyzikalniSenzory {
 
 
     // ==========================================
-    // --- 3. VZDÁLENOST (HC-SR04) ---
+    // --- 3. VZDÁLENOST A RYCHLOST (Paměťová logika) ---
     // ==========================================
 
+    // Globální proměnné pro uložení stavu z minulého měření
+    let _lastS = 0; // Vzdálenost v cm
+    let _lastT = 0; // Čas v milisekundách
+
     /**
-     * Změří vzdálenost nebo čas odrazu.
-     * @param jednotka cm, m, nebo ms (čas)
-     * @param trigPin Pin Trig
-     * @param echoPin Pin Echo
+     * Změří vzdálenost.
      */
     //% block="změřená vzdálenost v %jednotka | Trig %trigPin | Echo %echoPin"
     //% group="3. Vzdálenost (Sonar)"
     //% weight=80
     //% parts="sonar"
     export function zmeritVzdalenost(jednotka: VzdalenostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
-        // Tady používáme interní funkci, ale pro blok vracíme hezká čísla
         let raw_cm = measureRawCm(trigPin, echoPin);
+
+        // Aktualizujeme paměť i při pouhém měření vzdálenosti, 
+        // aby následné měření rychlosti nemělo "skok"
+        _lastS = raw_cm;
+        _lastT = control.millis();
 
         if (raw_cm <= 0) return 0;
 
@@ -175,92 +145,89 @@ namespace FyzikalniSenzory {
             case VzdalenostniJednotka.M:
                 return Math.round((raw_cm / 100) * 100) / 100;
             case VzdalenostniJednotka.Ms:
-                // raw_cm = duration / 58.0 -> duration = raw_cm * 58.0
-                // čas v ms = duration / 1000
                 return Math.round((raw_cm * 58.0 / 1000) * 10) / 10;
             default:
                 return 0;
         }
     }
 
-    /**
-     * Změří vzdálenost, pošle ji do grafu a počká.
-     */
     //% block="změřit vzdálenost a kreslit graf v %jednotka | Trig %trigPin | Echo %echoPin"
     //% group="3. Vzdálenost (Sonar)"
     //% weight=79
     //% blockGap=30
     export function zmeritVzdalenostAGraf(jednotka: VzdalenostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): void {
-        let hodnota = zmeritVzdalenost(jednotka, trigPin, echoPin);
-
-        if (jednotka == VzdalenostniJednotka.Cm) {
-            serial.writeValue("Vzdalenost (cm)", hodnota);
-        } else if (jednotka == VzdalenostniJednotka.M) {
-            serial.writeValue("Vzdalenost (m)", hodnota);
-        } else {
-            serial.writeValue("Cas odrazu (ms)", hodnota);
-        }
-
+        let val = zmeritVzdalenost(jednotka, trigPin, echoPin);
+        if (jednotka == VzdalenostniJednotka.Cm) serial.writeValue("Vzdalenost (cm)", val);
+        else if (jednotka == VzdalenostniJednotka.M) serial.writeValue("Vzdalenost (m)", val);
+        else serial.writeValue("Cas (ms)", val);
         basic.pause(60);
     }
 
     /**
-     * Změří okamžitou rychlost SUROVĚ (bez filtrace).
-     * Měří vzdálenost v čase T1 a T2 (rozdíl 40ms) a vypočítá změnu.
+     * Vypočítá rychlost na základě změny od posledního měření.
+     * Funguje přesně jako vzorec: v = (s - lastS) / (t - lastT)
      */
     //% block="změřená rychlost v %jednotka | Trig %trigPin | Echo %echoPin"
     //% group="3. Vzdálenost (Sonar)"
     //% weight=70
     export function zmeritRychlost(jednotka: RychlostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
-        let t1 = input.runningTime();
-        let d1 = measureRawCm(trigPin, echoPin);
+        // 1. Zjistíme aktuální hodnoty
+        let now = control.millis();
+        let s = measureRawCm(trigPin, echoPin);
 
-        // Zkrácená pauza pro rychlejší odezvu (40 ms)
-        // Méně než 40 ms už riskuje, že se smíchají odrazy zvuku
-        basic.pause(40);
-
-        let t2 = input.runningTime();
-        let d2 = measureRawCm(trigPin, echoPin);
-
-        // Ochrana proti chybám senzoru:
-        // Pokud senzor ztratí signál (vrátí 0), nelze počítat rychlost.
-        if (d1 <= 0 || d2 <= 0) return 0;
-
-        let dt = (t2 - t1) / 1000.0; // čas v sekundách
-        if (dt <= 0) return 0;
-
-        // v = dráha / čas
-        let v_cm_s = (d2 - d1) / dt;
-        let result = 0;
-
-        if (jednotka == RychlostniJednotka.Ms) {
-            result = v_cm_s / 100.0; // m/s
-        } else {
-            result = (v_cm_s / 100.0) * 3.6; // km/h
+        // 2. Ošetření prvního spuštění nebo chyby senzoru
+        if (_lastT == 0 || s <= 0) {
+            _lastS = s;
+            _lastT = now;
+            return 0;
         }
 
-        // Žádné zaokrouhlování (raw data)
-        return result;
+        // 3. Výpočet Delta (rozdíly)
+        let dt = now - _lastT;     // Čas v ms od minula
+        let ds = s - _lastS;       // Změna dráhy v cm
+
+        // Pokud je smyčka moc rychlá (dt=0), vrátíme 0 (dělení nulou)
+        if (dt <= 0) return 0;
+
+        // 4. Výpočet rychlosti podle tvého vzorce
+        // Tvůj kód: t = millis/10.  v = ds / (t - lastT).
+        // To znamená: v = cm / (10ms). 
+        // 1 cm / 10 ms = 100 cm / 1000 ms = 1 m/s.
+        // Takže tvůj vzorec dává přímo metry za sekundu.
+
+        // Fyzikální přepočet pro jistotu:
+        // v [cm/ms] = ds / dt
+        // v [m/s] = (ds / 100) / (dt / 1000) = (ds * 10) / dt
+
+        let v_ms = (ds * 10) / dt;
+
+        // 5. Uložení stavu pro příští cyklus
+        _lastS = s;
+        _lastT = now;
+
+        // 6. Návrat hodnoty
+        if (jednotka == RychlostniJednotka.Ms) {
+            return Math.round(v_ms * 10) / 10; // m/s
+        } else {
+            return Math.round((v_ms * 3.6) * 10) / 10; // km/h
+        }
     }
 
-    /**
-     * Změří rychlost, pošle ji do grafu a počká.
-     */
     //% block="změřit rychlost a kreslit graf v %jednotka | Trig %trigPin | Echo %echoPin"
     //% group="3. Vzdálenost (Sonar)"
     //% weight=69
     export function zmeritRychlostAGraf(jednotka: RychlostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): void {
         let v = zmeritRychlost(jednotka, trigPin, echoPin);
 
-        if (jednotka == RychlostniJednotka.Ms) {
-            serial.writeValue("Rychlost (m/s)", v);
-        } else {
-            serial.writeValue("Rychlost (km/h)", v);
-        }
-        basic.pause(40);
+        if (jednotka == RychlostniJednotka.Ms) serial.writeValue("Rychlost (m/s)", v);
+        else serial.writeValue("Rychlost (km/h)", v);
+
+        // Zde je pauza důležitá - určuje "dt" pro příští smyčku
+        // Pokud žák nepoužije vlastní pauzu, tato zajistí minimální rozestup
+        basic.pause(100);
     }
 
-    // Interní funkce pro přesné měření (vrací float cm nebo 0 při chybě)
+    // Interní pomocná funkce
     function measureRawCm(trigPin: DigitalPin, echoPin: DigitalPin): number {
         pins.digitalWritePin(trigPin, 0);
         control.waitMicros(2);
@@ -268,9 +235,7 @@ namespace FyzikalniSenzory {
         control.waitMicros(10);
         pins.digitalWritePin(trigPin, 0);
 
-        // Timeout 23500 micros = cca 4 metry
         const d = pins.pulseIn(echoPin, PulseValue.High, 23500);
-
         if (d <= 0) return 0;
         return d / 58.0;
     }
