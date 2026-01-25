@@ -15,9 +15,7 @@ namespace FyzikalniSenzory {
         //% block="cm"
         Cm,
         //% block="m"
-        M,
-        //% block="ms (čas)"
-        Ms
+        M
     }
 
     // ==========================================
@@ -63,6 +61,7 @@ namespace FyzikalniSenzory {
         HX711.SetPIN_SCK(sckPin);
         HX711.begin();
 
+        // Medián (3 hodnoty)
         let val1 = HX711.read();
         let val2 = HX711.read();
         let val3 = HX711.read();
@@ -113,137 +112,124 @@ namespace FyzikalniSenzory {
 
 
     // ==========================================
-    // --- 3. VZDÁLENOST A RYCHLOST ---
+    // --- 3. VZDÁLENOST ---
     // ==========================================
 
-    // Globální proměnné přesně podle tvého vzoru
-    let lastS = 0;
-    let lastT = 0;
+    // Globální proměnné pro paměť (sdílené mezi vzdáleností a rychlostí)
+    let _lastS = 0;
+    let _lastT = 0;
 
     /**
      * Změří vzdálenost.
      */
     //% block="změřená vzdálenost v %jednotka | Trig %trigPin | Echo %echoPin"
-    //% group="3. Vzdálenost (Sonar)"
+    //% group="3. Vzdálenost"
     //% weight=80
     //% parts="sonar"
     export function zmeritVzdalenost(jednotka: VzdalenostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
-        // Voláme naši interní kopii sonaru
-        // 1: Centimeters, 0: MicroSeconds
+        // Měříme v cm (1 = Centimeters)
+        let s = InternalSonar.ping(trigPin, echoPin, 1);
 
-        if (jednotka == VzdalenostniJednotka.Ms) {
-            let d_us = InternalSonar.ping(trigPin, echoPin, 0);
-            return Math.round(d_us / 1000);
-        }
-
-        let s = InternalSonar.ping(trigPin, echoPin, 1); // 1 = Centimeters
-
-        // Aktualizace paměti pro rychlost
+        // Aktualizace paměti, aby přechod na měření rychlosti byl plynulý
         if (s > 0) {
-            lastS = s;
-            lastT = control.millis() / 10;
+            _lastS = s;
+            _lastT = control.millis();
         }
 
-        if (jednotka == VzdalenostniJednotka.Cm) {
-            return s;
-        } else {
-            return s / 100;
+        switch (jednotka) {
+            case VzdalenostniJednotka.Cm:
+                return s;
+            case VzdalenostniJednotka.M:
+                return s / 100;
+            default:
+                return 0;
         }
     }
 
     //% block="změřit vzdálenost a kreslit graf v %jednotka | Trig %trigPin | Echo %echoPin"
-    //% group="3. Vzdálenost (Sonar)"
+    //% group="3. Vzdálenost"
     //% weight=79
-    //% blockGap=30
     export function zmeritVzdalenostAGraf(jednotka: VzdalenostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): void {
         let val = zmeritVzdalenost(jednotka, trigPin, echoPin);
 
         if (jednotka == VzdalenostniJednotka.Cm) serial.writeValue("Vzdalenost (cm)", val);
-        else if (jednotka == VzdalenostniJednotka.M) serial.writeValue("Vzdalenost (m)", val);
-        else serial.writeValue("Cas (ms)", val);
+        else serial.writeValue("Vzdalenost (m)", val);
 
-        basic.pause(500);
+        // ZVÝŠENÁ PAUZA DLE POŽADAVKU
+        basic.pause(200);
     }
 
+    // ==========================================
+    // --- 4. RYCHLOST (POKROČILÉ) ---
+    // ==========================================
+
     /**
-     * Vypočítá rychlost.
-     * Používá tvou logiku: t = millis/10, v = (s-lastS)/(t-lastT)
+     * Vypočítá rychlost. Tento blok sám měří vzdálenost a počítá změnu.
      */
     //% block="změřená rychlost v %jednotka | Trig %trigPin | Echo %echoPin"
-    //% group="3. Vzdálenost (Sonar)"
+    //% group="4. Rychlost (Pokročilé)"
     //% weight=70
     export function zmeritRychlost(jednotka: RychlostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
-        // 1. Měření "s" (cm)
-        let s = InternalSonar.ping(trigPin, echoPin, 1);
+        // 1. Změříme aktuální data
+        let s = InternalSonar.ping(trigPin, echoPin, 1); // cm
+        let t = control.millis(); // ms
 
-        // 2. Měření "t" (desetiny sekundy)
-        let t = control.millis() / 10;
+        let v_cm_s = 0; // Výchozí rychlost (když stojíme nebo je chyba)
 
+        // 2. Aplikace tvého filtru
+        // - s musí být v rozmezí 0-400 (platné měření)
+        // - _lastS musí být > 0 (tzn. minulé měření bylo platné)
+        if (s > 0 && s < 400 && _lastS > 0) {
 
-        // Inicializace
-        if (lastT == 0) {
-            lastS = s;
-            lastT = t;
-            return 0;
+            // Časový rozdíl v sekundách
+            let dt = (t - _lastT) / 1000.0;
+
+            // Filtr času: aspoň 20 ms rozestup, jinak je to šum
+            if (dt > 0.02) {
+                // Výpočet rychlosti v cm/s
+                // Může vyjít záporná (přibližování) nebo kladná (vzdalování)
+                v_cm_s = (s - _lastS) / dt;
+            }
         }
 
-        // 3. Výpočet
-        let dt = t - lastT;
-        if (dt <= 0) return 0;
+        // 3. Aktualizace paměti
+        // Ukládáme vždy, pokud je měření platné, nebo pokud je to jen reset
+        _lastS = s;
+        _lastT = t;
 
-        // v = (s - lastS) / dt
-        // Výsledek "v" je v jednotkách [cm / 0.1s] = [10 cm/s] = [0.1 m/s]
-        // Příklad: s=100, lastS=0, t=10 (1s), lastT=0.
-        // v = 100 / 10 = 10.
-        // Skutečná rychlost je 1 m/s.
-        // Takže v = 10 odpovídá 1 m/s.
-
-        let raw_v = (s - lastS) / dt;
-
-        // 4. Uložení
-        lastS = s;
-        lastT = t;
-
-        // 5. Převod na m/s nebo km/h
-        // Pokud raw_v = 10, chceme 1 m/s. Tedy dělit 10.
-        let v_ms = raw_v / 10;
-
+        // 4. Převod jednotek
         if (jednotka == RychlostniJednotka.Ms) {
-            return v_ms;
+            return v_cm_s / 100.0; // cm/s -> m/s
         } else {
-            return v_ms * 3.6;
+            return (v_cm_s / 100.0) * 3.6; // m/s -> km/h
         }
     }
 
     //% block="změřit rychlost a kreslit graf v %jednotka | Trig %trigPin | Echo %echoPin"
-    //% group="3. Vzdálenost (Sonar)"
+    //% group="4. Rychlost (Pokročilé)"
     //% weight=69
     export function zmeritRychlostAGraf(jednotka: RychlostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): void {
+        // Zavoláme funkci pro rychlost (ta si sama změří i vzdálenost a aktualizuje stav)
         let v = zmeritRychlost(jednotka, trigPin, echoPin);
 
+        // Do grafu pošleme rychlost
         if (jednotka == RychlostniJednotka.Ms) serial.writeValue("Rychlost (m/s)", v);
         else serial.writeValue("Rychlost (km/h)", v);
 
-        basic.pause(500);
+        // A pošleme tam I VZDÁLENOST, abys viděl souvislost (jestli rychlost sedí k pohybu)
+        // Použijeme _lastS, což je hodnota, ze které se rychlost počítala
+        serial.writeValue("Poloha (cm)", _lastS);
+
+        // ZVÝŠENÁ PAUZA
+        basic.pause(200);
     }
 }
 
 // =============================================================================
-// --- INTERNÍ SONAR KNIHOVNA (Kopie 1:1 z pxt-sonar) ---
+// --- INTERNÍ SONAR ---
 // =============================================================================
-// Umístěna mimo hlavní namespace, aby simulovala externí knihovnu.
-// Toto zajistí, že měření bude fungovat úplně stejně jako v originále.
-
 namespace InternalSonar {
-    /**
-     * Send a ping and get the echo time (in microseconds) as a result
-     * @param trig tigger pin
-     * @param echo echo pin
-     * @param unit desired conversion unit (0 = us, 1 = cm, 2 = inches)
-     * @param maxCmDistance maximum distance in centimeters (default is 500)
-     */
     export function ping(trig: DigitalPin, echo: DigitalPin, unit: number, maxCmDistance = 500): number {
-        // send pulse
         pins.setPull(trig, PinPullMode.PullNone);
         pins.digitalWritePin(trig, 0);
         control.waitMicros(2);
@@ -251,12 +237,10 @@ namespace InternalSonar {
         control.waitMicros(10);
         pins.digitalWritePin(trig, 0);
 
-        // read pulse
         const d = pins.pulseIn(echo, PulseValue.High, maxCmDistance * 58);
 
         switch (unit) {
             case 1: return Math.idiv(d, 58); // Centimeters
-            case 2: return Math.idiv(d, 148); // Inches
             default: return d; // Microseconds
         }
     }
