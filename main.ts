@@ -61,24 +61,19 @@ namespace FyzikalniSenzory {
     // --- 2. SILOMĚR (HX711) ---
     // ==========================================
 
-    // ZDE UPRAVUJEME KALIBRACI
+    // RESET KALIBRACE - PRO NOVÉ MĚŘENÍ S MEDIÁNEM
+    // 1. Zjisti hodnotu nuly (offset) s tímto novým kódem
+    let my_offset = 0;
 
-    // 1. OFFSET (Tára): Hodnota při nulovém zatížení (tvých 823)
-    let my_offset = 823;
+    // 2. Nastav zatím 1000 pro kalibraci
+    let my_scale = 1000;
 
-    // 2. MĚŘÍTKO (Scale): Kolik dílků je 1 Newton?
-    // Příklad: Pokud při 10 N (cca 1kg) ukazuje raw hodnota cca -9500 (rozdíl cca 10300 od nuly)
-    // tak měřítko je -10300 / 10 = -1030.
-    // POZOR: Pokud jsi měl měřítko -10300 a ukazovalo to správně 10N, nech to tak.
-    let my_scale = -10300;
-
-    // Pamatujeme si poslední piny pro funkci Tára
     let last_dout = DigitalPin.P15;
     let last_sck = DigitalPin.P16;
 
     /**
-     * Změří sílu v Newtonech. 
-     * Automaticky nastaví piny a změří hodnotu.
+     * Změří sílu v Newtonech (na 1 desetinné místo).
+     * Používá MEDIÁN ze 3 hodnot pro odstranění chyb (spiků).
      * @param doutPin Pin pro DT (Data)
      * @param sckPin Pin pro SCK (Clock)
      */
@@ -93,11 +88,25 @@ namespace FyzikalniSenzory {
         HX711.SetPIN_SCK(sckPin);
         HX711.begin();
 
-        let raw_val = HX711.read();
+        // MEDIÁNOVÝ FILTR (3 hodnoty)
+        // Přečteme 3 surové hodnoty
+        let val1 = HX711.read();
+        let val2 = HX711.read();
+        let val3 = HX711.read();
 
-        // Výpočet: (Aktuální hodnota - 823) / Měřítko
+        // Najdeme medián (prostřední hodnotu)
+        // Trik: Součet - Max - Min = Prostřední
+        let maxVal = Math.max(val1, Math.max(val2, val3));
+        let minVal = Math.min(val1, Math.min(val2, val3));
+        let raw_median = (val1 + val2 + val3) - maxVal - minVal;
+
         if (my_scale == 0) my_scale = 1;
-        return Math.idiv((raw_val - my_offset), my_scale);
+
+        // Výpočet na desetinná čísla
+        let val = (raw_median - my_offset) / my_scale;
+
+        // Zaokrouhlení na 1 desetinné místo
+        return Math.round(val * 10) / 10;
     }
 
     /**
@@ -114,7 +123,7 @@ namespace FyzikalniSenzory {
 
     /**
      * Vynuluje siloměr (tára). 
-     * Přepíše výchozí hodnotu 823 aktuální hodnotou.
+     * Používá medián pro spolehlivé nulování.
      */
     //% block="vynulovat siloměr (tára)"
     //% group="2. Síla"
@@ -124,13 +133,19 @@ namespace FyzikalniSenzory {
         HX711.SetPIN_SCK(last_sck);
         HX711.begin();
 
-        let suma = 0;
-        for (let i = 0; i < 3; i++) {
-            suma += HX711.read();
-            basic.pause(50);
+        // Přečteme 5 hodnot a seřadíme je pro nalezení mediánu
+        // Pro jednoduchost v TS uděláme pole a seřadíme
+        let pole: number[] = [];
+        for (let i = 0; i < 5; i++) {
+            pole.push(HX711.read());
+            basic.pause(10);
         }
-        // Uloží novou nulu
-        my_offset = Math.idiv(suma, 3);
+
+        // Jednoduché seřazení pole
+        pole.sort((a, b) => a - b);
+
+        // Vezmeme prostřední prvek (index 2)
+        my_offset = pole[2];
     }
 
     /**
@@ -174,9 +189,9 @@ namespace FyzikalniSenzory {
             case VzdalenostniJednotka.Cm:
                 return Math.floor(d / 58);
             case VzdalenostniJednotka.M:
-                return d / 5800;
+                return Math.round((d / 5800) * 100) / 100;
             case VzdalenostniJednotka.Ms:
-                return d / 1000;
+                return Math.round((d / 1000) * 10) / 10;
             default:
                 return 0;
         }
@@ -222,12 +237,15 @@ namespace FyzikalniSenzory {
         if (dt <= 0) return 0;
 
         let v_cm_s = (d2 - d1) / dt;
+        let result = 0;
 
         if (jednotka == RychlostniJednotka.Ms) {
-            return v_cm_s / 100.0;
+            result = v_cm_s / 100.0;
         } else {
-            return (v_cm_s / 100.0) * 3.6;
+            result = (v_cm_s / 100.0) * 3.6;
         }
+
+        return Math.round(result * 10) / 10;
     }
 
     /**
