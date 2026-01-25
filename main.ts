@@ -224,7 +224,7 @@ namespace FyzikalniSenzory {
         if (jednotka == RychlostniJednotka.Ms) serial.writeValue("Rychlost (m/s)", v);
         else serial.writeValue("Rychlost (km/h)", v);
 
-        basic.pause(200);
+        basic.pause(100);
     }
 }
 
