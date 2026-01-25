@@ -185,7 +185,7 @@ namespace FyzikalniSenzory {
         else serial.writeValue("Rychlost (km/h)", v);
 
         // ZVÝŠENÁ PAUZA (150 ms)
-        basic.pause(150);
+        basic.pause(200);
     }
 
     // =========================================================================
