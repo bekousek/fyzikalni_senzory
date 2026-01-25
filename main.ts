@@ -1,7 +1,7 @@
 /**
  * Školní rozšíření pro fyzikální měření: Teplota, Síla, Vzdálenost.
  */
-//% weight=100 color=#2E8B57 icon="\uf0c3" block="Fyzikální senzory"
+//% weight=120 color=#2E8B57 icon="\uf0c3" block="Fyzikální senzory"
 namespace FyzikalniSenzory {
 
     export enum RychlostniJednotka {
