@@ -61,12 +61,11 @@ namespace FyzikalniSenzory {
     // --- 2. SILOMĚR (HX711) ---
     // ==========================================
 
-    // RESET KALIBRACE - PRO NOVÉ MĚŘENÍ S MEDIÁNEM
-    // 1. Zjisti hodnotu nuly (offset) s tímto novým kódem
+    // Offset necháme 0. Tára se musí provést softwarově po startu.
     let my_offset = 0;
 
-    // 2. Nastav zatím 1000 pro kalibraci
-    let my_scale = 1000;
+    // NOVÉ KALIBRAČNÍ ČÍSLO (vypočteno z tvého měření 300g)
+    let my_scale = -10578;
 
     let last_dout = DigitalPin.P15;
     let last_sck = DigitalPin.P16;
@@ -89,20 +88,18 @@ namespace FyzikalniSenzory {
         HX711.begin();
 
         // MEDIÁNOVÝ FILTR (3 hodnoty)
-        // Přečteme 3 surové hodnoty
         let val1 = HX711.read();
         let val2 = HX711.read();
         let val3 = HX711.read();
 
-        // Najdeme medián (prostřední hodnotu)
-        // Trik: Součet - Max - Min = Prostřední
+        // Najdeme medián
         let maxVal = Math.max(val1, Math.max(val2, val3));
         let minVal = Math.min(val1, Math.min(val2, val3));
         let raw_median = (val1 + val2 + val3) - maxVal - minVal;
 
         if (my_scale == 0) my_scale = 1;
 
-        // Výpočet na desetinná čísla
+        // Výpočet
         let val = (raw_median - my_offset) / my_scale;
 
         // Zaokrouhlení na 1 desetinné místo
@@ -133,18 +130,15 @@ namespace FyzikalniSenzory {
         HX711.SetPIN_SCK(last_sck);
         HX711.begin();
 
-        // Přečteme 5 hodnot a seřadíme je pro nalezení mediánu
-        // Pro jednoduchost v TS uděláme pole a seřadíme
+        // Přečteme 5 hodnot a seřadíme je
         let pole: number[] = [];
         for (let i = 0; i < 5; i++) {
             pole.push(HX711.read());
             basic.pause(10);
         }
-
-        // Jednoduché seřazení pole
         pole.sort((a, b) => a - b);
 
-        // Vezmeme prostřední prvek (index 2)
+        // Uložíme medián (prostřední prvek) jako nový offset
         my_offset = pole[2];
     }
 
