@@ -46,7 +46,6 @@ namespace FyzikalniSenzory {
     // --- 2. SILOMĚR (HX711) ---
     // ==========================================
 
-    // Tady necháváme to, co fungovalo (medián a tvá kalibrace)
     let my_offset = 0;
     let my_scale = -10578;
 
@@ -114,41 +113,41 @@ namespace FyzikalniSenzory {
 
 
     // ==========================================
-    // --- 3. VZDÁLENOST A RYCHLOST (SONAR) ---
+    // --- 3. VZDÁLENOST A RYCHLOST ---
     // ==========================================
 
+    // Globální proměnné přesně podle tvého vzoru
     let lastS = 0;
     let lastT = 0;
 
     /**
      * Změří vzdálenost.
-     * Používá identickou logiku jako pxt-sonar.
      */
     //% block="změřená vzdálenost v %jednotka | Trig %trigPin | Echo %echoPin"
     //% group="3. Vzdálenost (Sonar)"
     //% weight=80
     //% parts="sonar"
     export function zmeritVzdalenost(jednotka: VzdalenostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
-        // Voláme naši interní funkci (vypůjčenou z pxt-sonar)
-        let d_cm = helper_ping(trigPin, echoPin);
+        // Voláme naši interní kopii sonaru
+        // 1: Centimeters, 0: MicroSeconds
 
-        // Aktualizace paměti pro rychlost (aby navazovala)
-        if (d_cm > 0) {
-            lastS = d_cm;
+        if (jednotka == VzdalenostniJednotka.Ms) {
+            let d_us = InternalSonar.ping(trigPin, echoPin, 0);
+            return Math.round(d_us / 1000);
+        }
+
+        let s = InternalSonar.ping(trigPin, echoPin, 1); // 1 = Centimeters
+
+        // Aktualizace paměti pro rychlost
+        if (s > 0) {
+            lastS = s;
             lastT = control.millis() / 10;
         }
 
-        switch (jednotka) {
-            case VzdalenostniJednotka.Cm:
-                return Math.idiv(d_cm, 1); // Celá čísla
-            case VzdalenostniJednotka.M:
-                return d_cm / 100;
-            case VzdalenostniJednotka.Ms:
-                // d_cm = (duration / 58). Takže duration = d_cm * 58. 
-                // Výsledek chceme v ms (ne us), takže / 1000.
-                return Math.round((d_cm * 58) / 1000);
-            default:
-                return 0;
+        if (jednotka == VzdalenostniJednotka.Cm) {
+            return s;
+        } else {
+            return s / 100;
         }
     }
 
@@ -167,40 +166,53 @@ namespace FyzikalniSenzory {
     }
 
     /**
-     * Vypočítá rychlost na základě tvého vzorce: v = (s - lastS) / (t - lastT).
+     * Vypočítá rychlost.
+     * Používá tvou logiku: t = millis/10, v = (s-lastS)/(t-lastT)
      */
     //% block="změřená rychlost v %jednotka | Trig %trigPin | Echo %echoPin"
     //% group="3. Vzdálenost (Sonar)"
     //% weight=70
     export function zmeritRychlost(jednotka: RychlostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
-        // 1. Změříme aktuální data
-        let s = helper_ping(trigPin, echoPin);
+        // 1. Měření "s" (cm)
+        let s = InternalSonar.ping(trigPin, echoPin, 1);
+
+        // 2. Měření "t" (desetiny sekundy)
         let t = control.millis() / 10;
 
-        if (s == 0) return 0; // Chyba senzoru - nepočítáme
+        if (s == 0) return 0; // Chyba senzoru
 
-        // Inicializace při prvním spuštění
+        // Inicializace
         if (lastT == 0) {
             lastS = s;
             lastT = t;
             return 0;
         }
 
-        // 2. Výpočet (tvůj vzorec)
+        // 3. Výpočet
         let dt = t - lastT;
         if (dt <= 0) return 0;
 
-        let v = (s - lastS) / dt; // Výsledek je v m/s
+        // v = (s - lastS) / dt
+        // Výsledek "v" je v jednotkách [cm / 0.1s] = [10 cm/s] = [0.1 m/s]
+        // Příklad: s=100, lastS=0, t=10 (1s), lastT=0.
+        // v = 100 / 10 = 10.
+        // Skutečná rychlost je 1 m/s.
+        // Takže v = 10 odpovídá 1 m/s.
 
-        // 3. Uložení
+        let raw_v = (s - lastS) / dt;
+
+        // 4. Uložení
         lastS = s;
         lastT = t;
 
-        // 4. Převod
+        // 5. Převod na m/s nebo km/h
+        // Pokud raw_v = 10, chceme 1 m/s. Tedy dělit 10.
+        let v_ms = raw_v / 10;
+
         if (jednotka == RychlostniJednotka.Ms) {
-            return v;
+            return v_ms;
         } else {
-            return v * 3.6; // km/h
+            return v_ms * 3.6;
         }
     }
 
@@ -215,17 +227,24 @@ namespace FyzikalniSenzory {
 
         basic.pause(100);
     }
+}
 
-    // =========================================================================
-    // --- INTERNÍ HELPER (Kopie 1:1 z knihovny pxt-sonar) ---
-    // =========================================================================
-    // Tímto obcházíme problém se jmény a závislostmi. 
-    // Toto je přesně ten kód, který funguje v originálním rozšíření.
+// =============================================================================
+// --- INTERNÍ SONAR KNIHOVNA (Kopie 1:1 z pxt-sonar) ---
+// =============================================================================
+// Umístěna mimo hlavní namespace, aby simulovala externí knihovnu.
+// Toto zajistí, že měření bude fungovat úplně stejně jako v originále.
 
-    function helper_ping(trig: DigitalPin, echo: DigitalPin): number {
-        // maxCmDistance nastaveno na 500 (default z pxt-sonar)
-        let maxCmDistance = 500;
-
+namespace InternalSonar {
+    /**
+     * Send a ping and get the echo time (in microseconds) as a result
+     * @param trig tigger pin
+     * @param echo echo pin
+     * @param unit desired conversion unit (0 = us, 1 = cm, 2 = inches)
+     * @param maxCmDistance maximum distance in centimeters (default is 500)
+     */
+    export function ping(trig: DigitalPin, echo: DigitalPin, unit: number, maxCmDistance = 500): number {
+        // send pulse
         pins.setPull(trig, PinPullMode.PullNone);
         pins.digitalWritePin(trig, 0);
         control.waitMicros(2);
@@ -236,7 +255,10 @@ namespace FyzikalniSenzory {
         // read pulse
         const d = pins.pulseIn(echo, PulseValue.High, maxCmDistance * 58);
 
-        // Vracíme centimetry (d / 58)
-        return Math.idiv(d, 58);
+        switch (unit) {
+            case 1: return Math.idiv(d, 58); // Centimeters
+            case 2: return Math.idiv(d, 148); // Inches
+            default: return d; // Microseconds
+        }
     }
 }
