@@ -46,8 +46,10 @@ namespace FyzikalniSenzory {
     // --- 2. SILOMĚR (HX711) ---
     // ==========================================
 
-    // Kalibrace (dle tvého posledního měření)
+    // Offset necháme 0. Tára se musí provést softwarově po startu.
     let my_offset = 0;
+
+    // Kalibrace dle tvého měření (-10578)
     let my_scale = -10578;
 
     let last_dout = DigitalPin.P15;
@@ -115,29 +117,38 @@ namespace FyzikalniSenzory {
 
 
     // ==========================================
-    // --- 3. VZDÁLENOST A RYCHLOST (Paměťová logika) ---
+    // --- 3. VZDÁLENOST A RYCHLOST ---
     // ==========================================
 
-    // Globální proměnné pro uložení stavu z minulého měření
-    let _lastS = 0; // Vzdálenost v cm
-    let _lastT = 0; // Čas v milisekundách
+    let _lastS = 0;
+    let _lastT = 0;
 
     /**
      * Změří vzdálenost.
+     * Používá medián ze 3 měření pro stabilitu, ale nezahazuje nuly.
      */
     //% block="změřená vzdálenost v %jednotka | Trig %trigPin | Echo %echoPin"
     //% group="3. Vzdálenost (Sonar)"
     //% weight=80
     //% parts="sonar"
     export function zmeritVzdalenost(jednotka: VzdalenostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
-        let raw_cm = measureRawCm(trigPin, echoPin);
+        // Změříme 3x rychle po sobě
+        let d1 = measureRawCm(trigPin, echoPin);
+        control.waitMicros(2000); // 2ms pauza mezi pingy
+        let d2 = measureRawCm(trigPin, echoPin);
+        control.waitMicros(2000);
+        let d3 = measureRawCm(trigPin, echoPin);
 
-        // Aktualizujeme paměť i při pouhém měření vzdálenosti, 
-        // aby následné měření rychlosti nemělo "skok"
+        // Najdeme medián (prostřední hodnotu)
+        // Pokud jedna hodnota uletí (chyba), medián ji zahodí.
+        // Pokud zakryješ senzor, všechny 3 budou 0 -> medián bude 0.
+        let maxD = Math.max(d1, Math.max(d2, d3));
+        let minD = Math.min(d1, Math.min(d2, d3));
+        let raw_cm = (d1 + d2 + d3) - maxD - minD;
+
+        // Aktualizujeme paměť pro příští výpočet rychlosti
         _lastS = raw_cm;
         _lastT = control.millis();
-
-        if (raw_cm <= 0) return 0;
 
         switch (jednotka) {
             case VzdalenostniJednotka.Cm:
@@ -164,52 +175,48 @@ namespace FyzikalniSenzory {
     }
 
     /**
-     * Vypočítá rychlost na základě změny od posledního měření.
-     * Funguje přesně jako vzorec: v = (s - lastS) / (t - lastT)
+     * Vypočítá rychlost.
+     * Bere surová data "teď" vs "minule". Žádné filtry.
      */
     //% block="změřená rychlost v %jednotka | Trig %trigPin | Echo %echoPin"
     //% group="3. Vzdálenost (Sonar)"
     //% weight=70
     export function zmeritRychlost(jednotka: RychlostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
-        // 1. Zjistíme aktuální hodnoty
         let now = control.millis();
-        let s = measureRawCm(trigPin, echoPin);
 
-        // 2. Ošetření prvního spuštění nebo chyby senzoru
-        if (_lastT == 0 || s <= 0) {
+        // Změříme mediánem (aby měření bylo spolehlivé)
+        let d1 = measureRawCm(trigPin, echoPin);
+        control.waitMicros(2000);
+        let d2 = measureRawCm(trigPin, echoPin);
+        control.waitMicros(2000);
+        let d3 = measureRawCm(trigPin, echoPin);
+
+        let maxD = Math.max(d1, Math.max(d2, d3));
+        let minD = Math.min(d1, Math.min(d2, d3));
+        let s = (d1 + d2 + d3) - maxD - minD;
+
+        // Pokud je to první spuštění
+        if (_lastT == 0) {
             _lastS = s;
             _lastT = now;
             return 0;
         }
 
-        // 3. Výpočet Delta (rozdíly)
-        let dt = now - _lastT;     // Čas v ms od minula
-        let ds = s - _lastS;       // Změna dráhy v cm
+        let dt = now - _lastT;
+        let ds = s - _lastS;
 
-        // Pokud je smyčka moc rychlá (dt=0), vrátíme 0 (dělení nulou)
         if (dt <= 0) return 0;
 
-        // 4. Výpočet rychlosti podle tvého vzorce
-        // Tvůj kód: t = millis/10.  v = ds / (t - lastT).
-        // To znamená: v = cm / (10ms). 
-        // 1 cm / 10 ms = 100 cm / 1000 ms = 1 m/s.
-        // Takže tvůj vzorec dává přímo metry za sekundu.
-
-        // Fyzikální přepočet pro jistotu:
-        // v [cm/ms] = ds / dt
-        // v [m/s] = (ds / 100) / (dt / 1000) = (ds * 10) / dt
-
+        // Výpočet rychlosti [cm/ms] * 10 = [m/s]
         let v_ms = (ds * 10) / dt;
 
-        // 5. Uložení stavu pro příští cyklus
         _lastS = s;
         _lastT = now;
 
-        // 6. Návrat hodnoty
         if (jednotka == RychlostniJednotka.Ms) {
-            return Math.round(v_ms * 10) / 10; // m/s
+            return Math.round(v_ms * 10) / 10;
         } else {
-            return Math.round((v_ms * 3.6) * 10) / 10; // km/h
+            return Math.round((v_ms * 3.6) * 10) / 10;
         }
     }
 
@@ -222,12 +229,9 @@ namespace FyzikalniSenzory {
         if (jednotka == RychlostniJednotka.Ms) serial.writeValue("Rychlost (m/s)", v);
         else serial.writeValue("Rychlost (km/h)", v);
 
-        // Zde je pauza důležitá - určuje "dt" pro příští smyčku
-        // Pokud žák nepoužije vlastní pauzu, tato zajistí minimální rozestup
         basic.pause(100);
     }
 
-    // Interní pomocná funkce
     function measureRawCm(trigPin: DigitalPin, echoPin: DigitalPin): number {
         pins.digitalWritePin(trigPin, 0);
         control.waitMicros(2);
