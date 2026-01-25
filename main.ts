@@ -1,3 +1,7 @@
+/**
+ * Školní rozšíření pro fyzikální měření: Teplota, Síla, Vzdálenost.
+ */
+//% weight=98 color=#145A32 icon="\uf0c3" block="Fyzikální senzory"
 namespace FyzikalniSenzory {
 
     // ==========================================
@@ -6,6 +10,8 @@ namespace FyzikalniSenzory {
 
     /**
      * Změří teplotu z DS18B20.
+     * Vyžaduje připojenou knihovnu dstemp.
+     * @param pin Pin připojený k senzoru
      */
     //% block="změřit teplotu (°C) na pinu %pin"
     //% group="1. Teplota"
@@ -33,12 +39,10 @@ namespace FyzikalniSenzory {
     // --- 2. SILOMĚR (HX711) ---
     // ==========================================
 
-    // Proměnné pro naši logiku (offset a měřítko v Newtonech)
+    // Proměnné pro naši logiku
     let my_offset = 0;
 
-    // !!! ZDE UPRAV KALIBRACI !!! 
-    // Kolik dílků senzoru odpovídá 1 Newtonu?
-    // Tip: Změř známé závaží, podívej se na raw hodnotu a vyděl to.
+    // KALIBRACE (nastavena na -10300 dle tvého měření)
     let my_scale = -10300;
 
     // Pamatujeme si poslední piny pro funkci Tára
@@ -60,15 +64,13 @@ namespace FyzikalniSenzory {
         last_sck = sckPin;
 
         // 2. Nastavení pinů v externí knihovně HX711
-        // Používáme přesné názvy z tvého souboru HX711.ts
         HX711.SetPIN_DOUT(doutPin);
         HX711.SetPIN_SCK(sckPin);
 
-        // 3. Inicializace (nastaví gain 128 a probudí čip)
+        // 3. Inicializace
         HX711.begin();
 
         // 4. Přečtení surové hodnoty
-        // Funkce read() v té knihovně vrací surové číslo (raw 24-bit integer)
         let raw_val = HX711.read();
 
         // 5. Výpočet Newtonů: (raw - offset) / měřítko
@@ -97,7 +99,7 @@ namespace FyzikalniSenzory {
     //% group="2. Síla (Siloměr)"
     //% weight=88
     export function tarovatSilomer(): void {
-        // Pro jistotu znovu nastavíme piny (kdyby se mezitím změnily)
+        // Pro jistotu znovu nastavíme piny
         HX711.SetPIN_DOUT(last_dout);
         HX711.SetPIN_SCK(last_sck);
         HX711.begin();
@@ -129,13 +131,14 @@ namespace FyzikalniSenzory {
 
     /**
      * Změří vzdálenost v cm.
+     * @param trigPin Pin Trig
+     * @param echoPin Pin Echo
      */
     //% block="změřit vzdálenost (cm) | Trig %trigPin | Echo %echoPin"
     //% group="3. Vzdálenost (Sonar)"
     //% weight=80
     //% parts="sonar"
     export function zmeritVzdalenost(trigPin: DigitalPin, echoPin: DigitalPin): number {
-        // ... (kód beze změny)
         pins.digitalWritePin(trigPin, 0);
         control.waitMicros(2);
         pins.digitalWritePin(trigPin, 1);
