@@ -4,6 +4,16 @@
 //% weight=100 color=#2E8B57 icon="\uf0c3" block="Fyzikální senzory"
 namespace FyzikalniSenzory {
 
+    /**
+     * Jednotky pro měření rychlosti
+     */
+    export enum RychlostniJednotka {
+        //% block="m/s"
+        Ms,
+        //% block="km/h"
+        Kmh
+    }
+
     // ==========================================
     // --- 1. TEPLOMĚR (DS18B20) ---
     // ==========================================
@@ -31,7 +41,6 @@ namespace FyzikalniSenzory {
     export function zmeritTeplotuAGraf(pin: DigitalPin): void {
         let t = zmeritTeplotu(pin);
         serial.writeValue("Teplota (C)", t);
-        // Teploměr potřebuje čas na konverzi, 1000 ms je bezpečné minimum.
         basic.pause(1000);
     }
 
@@ -89,7 +98,6 @@ namespace FyzikalniSenzory {
     export function zmeritSiluAGraf(doutPin: DigitalPin, sckPin: DigitalPin): void {
         let f = zmeritSilu(doutPin, sckPin);
         serial.writeValue("Sila (N)", f);
-        // Krátká pauza, samotné čtení senzoru také chvíli trvá.
         basic.pause(50);
     }
 
@@ -101,13 +109,11 @@ namespace FyzikalniSenzory {
     //% group="2. Síla"
     //% weight=88
     export function tarovatSilomer(): void {
-        // Pro jistotu znovu nastavíme piny
         HX711.SetPIN_DOUT(last_dout);
         HX711.SetPIN_SCK(last_sck);
         HX711.begin();
 
         let suma = 0;
-        // Uděláme 3 měření pro průměr
         for (let i = 0; i < 3; i++) {
             suma += HX711.read();
             basic.pause(50);
@@ -148,24 +154,88 @@ namespace FyzikalniSenzory {
         pins.digitalWritePin(trigPin, 0);
 
         const d = pins.pulseIn(echoPin, PulseValue.High, 23200);
-        let vzdalenost = Math.idiv(d, 58);
+
+        // Výpočet v cm
+        let vzdalenost = d / 58;
 
         if (vzdalenost <= 0) return 0;
-        return vzdalenost;
+        return Math.floor(vzdalenost); // Vracíme celé cm
     }
 
     /**
      * Změří vzdálenost, pošle ji do grafu a počká.
-     * @param trigPin Pin Trig
-     * @param echoPin Pin Echo
      */
     //% block="změřit vzdálenost a kreslit graf | Trig %trigPin | Echo %echoPin"
     //% group="3. Vzdálenost (Sonar)"
     //% weight=79
+    //% blockGap=30
     export function zmeritVzdalenostAGraf(trigPin: DigitalPin, echoPin: DigitalPin): void {
         let dist = zmeritVzdalenost(trigPin, echoPin);
         serial.writeValue("Vzdalenost (cm)", dist);
-        // Pauza pro uklidnění odrazů zvuku (ghost echoes)
         basic.pause(60);
+    }
+
+    /**
+     * Změří okamžitou rychlost.
+     * (Provede dvě měření s odstupem 100 ms).
+     */
+    //% block="změřená rychlost v %jednotka | Trig %trigPin | Echo %echoPin"
+    //% group="3. Vzdálenost (Sonar)"
+    //% weight=70
+    export function zmeritRychlost(jednotka: RychlostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
+        // 1. První měření
+        let t1 = input.runningTime();
+        // Zde voláme přímo logiku měření, abychom neztratili desetinná místa u cm
+        let d1 = measureRawCm(trigPin, echoPin);
+
+        // 2. Pauza 100ms
+        basic.pause(100);
+
+        // 3. Druhé měření
+        let t2 = input.runningTime();
+        let d2 = measureRawCm(trigPin, echoPin);
+
+        // 4. Výpočet
+        let dt = (t2 - t1) / 1000.0; // čas v sekundách
+        if (dt <= 0) return 0;
+
+        let v_cm_s = (d2 - d1) / dt; // rychlost v cm/s
+
+        // 5. Převod jednotek
+        if (jednotka == RychlostniJednotka.Ms) {
+            return v_cm_s / 100.0; // cm/s -> m/s
+        } else {
+            return (v_cm_s / 100.0) * 3.6; // m/s -> km/h
+        }
+    }
+
+    /**
+     * Změří rychlost, pošle ji do grafu a počká.
+     */
+    //% block="změřit rychlost a kreslit graf v %jednotka | Trig %trigPin | Echo %echoPin"
+    //% group="3. Vzdálenost (Sonar)"
+    //% weight=69
+    export function zmeritRychlostAGraf(jednotka: RychlostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): void {
+        let v = zmeritRychlost(jednotka, trigPin, echoPin);
+
+        if (jednotka == RychlostniJednotka.Ms) {
+            serial.writeValue("Rychlost (m/s)", v);
+        } else {
+            serial.writeValue("Rychlost (km/h)", v);
+        }
+        basic.pause(50);
+    }
+
+    // Pomocná funkce pro přesnější měření (nezaokrouhlené cm)
+    function measureRawCm(trigPin: DigitalPin, echoPin: DigitalPin): number {
+        pins.digitalWritePin(trigPin, 0);
+        control.waitMicros(2);
+        pins.digitalWritePin(trigPin, 1);
+        control.waitMicros(10);
+        pins.digitalWritePin(trigPin, 0);
+
+        const d = pins.pulseIn(echoPin, PulseValue.High, 23200);
+        if (d <= 0) return 0;
+        return d / 58.0; // Vrací float
     }
 }
