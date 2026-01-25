@@ -1,7 +1,7 @@
 /**
  * Školní rozšíření pro fyzikální měření: Teplota, Síla, Vzdálenost.
  */
-//% weight=98 color=#2E8B57 icon="\uf0c3" block="Fyzikální senzory"
+//% weight=100 color=#2E8B57 icon="\uf0c3" block="Fyzikální senzory"
 namespace FyzikalniSenzory {
 
     // ==========================================
@@ -22,7 +22,7 @@ namespace FyzikalniSenzory {
     }
 
     /**
-     * Změří teplotu, pošle ji do grafu a počká 1 sekundu.
+     * Změří teplotu, pošle ji do grafu a počká.
      * @param pin Pin připojený k senzoru
      */
     //% block="změřit teplotu a kreslit graf (pin %pin)"
@@ -31,6 +31,7 @@ namespace FyzikalniSenzory {
     export function zmeritTeplotuAGraf(pin: DigitalPin): void {
         let t = zmeritTeplotu(pin);
         serial.writeValue("Teplota (C)", t);
+        // Teploměr potřebuje čas na konverzi, 1000 ms je bezpečné minimum.
         basic.pause(1000);
     }
 
@@ -80,7 +81,7 @@ namespace FyzikalniSenzory {
     }
 
     /**
-     * Změří sílu, pošle ji do grafu a počká 1 sekundu.
+     * Změří sílu, pošle ji do grafu a počká.
      */
     //% block="změřit sílu a kreslit graf | DT %doutPin | SCK %sckPin"
     //% group="2. Síla"
@@ -88,7 +89,8 @@ namespace FyzikalniSenzory {
     export function zmeritSiluAGraf(doutPin: DigitalPin, sckPin: DigitalPin): void {
         let f = zmeritSilu(doutPin, sckPin);
         serial.writeValue("Sila (N)", f);
-        basic.pause(1000);
+        // Krátká pauza, samotné čtení senzoru také chvíli trvá.
+        basic.pause(50);
     }
 
     /**
@@ -153,7 +155,7 @@ namespace FyzikalniSenzory {
     }
 
     /**
-     * Změří vzdálenost, pošle ji do grafu a počká 1 sekundu.
+     * Změří vzdálenost, pošle ji do grafu a počká.
      * @param trigPin Pin Trig
      * @param echoPin Pin Echo
      */
@@ -163,6 +165,7 @@ namespace FyzikalniSenzory {
     export function zmeritVzdalenostAGraf(trigPin: DigitalPin, echoPin: DigitalPin): void {
         let dist = zmeritVzdalenost(trigPin, echoPin);
         serial.writeValue("Vzdalenost (cm)", dist);
-        basic.pause(1000);
+        // Pauza pro uklidnění odrazů zvuku (ghost echoes)
+        basic.pause(60);
     }
 }
