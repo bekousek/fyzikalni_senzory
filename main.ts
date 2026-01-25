@@ -162,7 +162,7 @@ namespace FyzikalniSenzory {
         else if (jednotka == VzdalenostniJednotka.M) serial.writeValue("Vzdalenost (m)", val);
         else serial.writeValue("Cas (ms)", val);
 
-        basic.pause(200);
+        basic.pause(500);
     }
 
     /**
@@ -224,7 +224,7 @@ namespace FyzikalniSenzory {
         if (jednotka == RychlostniJednotka.Ms) serial.writeValue("Rychlost (m/s)", v);
         else serial.writeValue("Rychlost (km/h)", v);
 
-        basic.pause(100);
+        basic.pause(500);
     }
 }
 
