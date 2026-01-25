@@ -1,7 +1,7 @@
 /**
  * Školní rozšíření pro fyzikální měření: Teplota, Síla, Vzdálenost.
  */
-//% weight=98 color=#145A32 icon="\uf0c3" block="Fyzikální senzory"
+//% weight=98 color=#2E8B57 icon="\uf0c3" block="Fyzikální senzory"
 namespace FyzikalniSenzory {
 
     // ==========================================
@@ -13,7 +13,7 @@ namespace FyzikalniSenzory {
      * Vyžaduje připojenou knihovnu dstemp.
      * @param pin Pin připojený k senzoru
      */
-    //% block="změřit teplotu (°C) na pinu %pin"
+    //% block="změřená teplota (°C) na pinu %pin"
     //% group="1. Teplota"
     //% weight=100
     //% parts="ds18b20"
@@ -25,7 +25,7 @@ namespace FyzikalniSenzory {
      * Změří teplotu, pošle ji do grafu a počká 1 sekundu.
      * @param pin Pin připojený k senzoru
      */
-    //% block="změřit teplotu a kresli graf (pin %pin)"
+    //% block="změřit teplotu a kreslit graf (pin %pin)"
     //% group="1. Teplota"
     //% weight=99
     export function zmeritTeplotuAGraf(pin: DigitalPin): void {
@@ -55,8 +55,8 @@ namespace FyzikalniSenzory {
      * @param doutPin Pin pro DT (Data)
      * @param sckPin Pin pro SCK (Clock)
      */
-    //% block="změřit sílu (N) | DT %doutPin | SCK %sckPin"
-    //% group="2. Síla (Siloměr)"
+    //% block="změřená síla (N) | DT %doutPin | SCK %sckPin"
+    //% group="2. Síla"
     //% weight=90
     export function zmeritSilu(doutPin: DigitalPin, sckPin: DigitalPin): number {
         // 1. Uložení pinů pro budoucí použití (tára)
@@ -82,8 +82,8 @@ namespace FyzikalniSenzory {
     /**
      * Změří sílu, pošle ji do grafu a počká 1 sekundu.
      */
-    //% block="změřit sílu a kresli graf | DT %doutPin | SCK %sckPin"
-    //% group="2. Síla (Siloměr)"
+    //% block="změřit sílu a kreslit graf | DT %doutPin | SCK %sckPin"
+    //% group="2. Síla"
     //% weight=89
     export function zmeritSiluAGraf(doutPin: DigitalPin, sckPin: DigitalPin): void {
         let f = zmeritSilu(doutPin, sckPin);
@@ -96,7 +96,7 @@ namespace FyzikalniSenzory {
      * Použije piny, které byly nastaveny v posledním měření.
      */
     //% block="vynulovat siloměr (tára)"
-    //% group="2. Síla (Siloměr)"
+    //% group="2. Síla"
     //% weight=88
     export function tarovatSilomer(): void {
         // Pro jistotu znovu nastavíme piny
@@ -117,7 +117,7 @@ namespace FyzikalniSenzory {
      * Pokročilá kalibrace: Kolik surových jednotek odpovídá 1 Newtonu?
      */
     //% block="kalibrovat siloměr (dílků na 1 N): %meritko"
-    //% group="2. Síla (Siloměr)"
+    //% group="2. Síla"
     //% advanced=true
     export function nastavitMeritko(meritko: number): void {
         if (meritko == 0) meritko = 1;
@@ -134,7 +134,7 @@ namespace FyzikalniSenzory {
      * @param trigPin Pin Trig
      * @param echoPin Pin Echo
      */
-    //% block="změřit vzdálenost (cm) | Trig %trigPin | Echo %echoPin"
+    //% block="změřená vzdálenost (cm) | Trig %trigPin | Echo %echoPin"
     //% group="3. Vzdálenost (Sonar)"
     //% weight=80
     //% parts="sonar"
@@ -157,7 +157,7 @@ namespace FyzikalniSenzory {
      * @param trigPin Pin Trig
      * @param echoPin Pin Echo
      */
-    //% block="změřit vzdálenost a kresli graf | Trig %trigPin | Echo %echoPin"
+    //% block="změřit vzdálenost a kreslit graf | Trig %trigPin | Echo %echoPin"
     //% group="3. Vzdálenost (Sonar)"
     //% weight=79
     export function zmeritVzdalenostAGraf(trigPin: DigitalPin, echoPin: DigitalPin): void {
