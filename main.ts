@@ -25,7 +25,7 @@ namespace FyzikalniSenzory {
     //% block="změřená teplota (°C) na pinu %pin"
     //% group="1. Teplota"
     //% weight=100
-    //% parts="ds18b20"
+   
     export function zmeritTeplotu(pin: DigitalPin): number {
         return dstemp.celsius(pin);
     }
@@ -125,7 +125,6 @@ namespace FyzikalniSenzory {
     //% block="změřená vzdálenost v %jednotka | Trig %trigPin | Echo %echoPin"
     //% group="3. Vzdálenost"
     //% weight=80
-    //% parts="sonar"
     export function zmeritVzdalenost(jednotka: VzdalenostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
         // Měříme v cm (1 = Centimeters)
         let s = InternalSonar.ping(trigPin, echoPin, 1);
