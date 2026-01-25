@@ -117,7 +117,7 @@ namespace FyzikalniSenzory {
     // Globální paměť sdílená všemi bloky sonaru
     let _lastS = 0;
     let _lastT = 0;
-    let _lastV = 0; // Pamatujeme si i poslední rychlost
+    let _lastV = 0;
 
     /**
      * Změří vzdálenost. Zároveň aktualizuje data pro výpočet rychlosti.
@@ -127,10 +127,9 @@ namespace FyzikalniSenzory {
     //% weight=80
     //% parts="sonar"
     export function zmeritVzdalenost(jednotka: VzdalenostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
-        // Voláme sdílenou funkci, která změří S, spočítá V a uloží vše do globálních proměnných
+        // Voláme sdílenou funkci
         updateSonarData(trigPin, echoPin);
 
-        // Vracíme jen to, co už máme v paměti (_lastS)
         let s = _lastS;
 
         switch (jednotka) {
@@ -148,13 +147,13 @@ namespace FyzikalniSenzory {
     //% weight=79
     //% blockGap=30
     export function zmeritVzdalenostAGraf(jednotka: VzdalenostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): void {
-        // Změříme a aktualizujeme
         let val = zmeritVzdalenost(jednotka, trigPin, echoPin);
 
         if (jednotka == VzdalenostniJednotka.Cm) serial.writeValue("Vzdalenost (cm)", val);
         else serial.writeValue("Vzdalenost (m)", val);
 
-        basic.pause(100);
+        // ZVÝŠENÁ PAUZA (150 ms)
+        basic.pause(150);
     }
 
     /**
@@ -167,7 +166,6 @@ namespace FyzikalniSenzory {
         // Změříme S, spočítáme V, uložíme
         updateSonarData(trigPin, echoPin);
 
-        // Vytáhneme vypočtenou rychlost z paměti
         let v_cm_s = _lastV;
 
         if (jednotka == RychlostniJednotka.Ms) {
@@ -181,33 +179,27 @@ namespace FyzikalniSenzory {
     //% group="3. Vzdálenost (Sonar)"
     //% weight=69
     export function zmeritRychlostAGraf(jednotka: RychlostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): void {
-        // Tento blok zavolá zmeritRychlost -> ta zavolá updateSonarData -> ta změří a spočítá
         let v = zmeritRychlost(jednotka, trigPin, echoPin);
 
         if (jednotka == RychlostniJednotka.Ms) serial.writeValue("Rychlost (m/s)", v);
         else serial.writeValue("Rychlost (km/h)", v);
 
-        // Pro kontrolu posíláme i polohu (aby žák viděl souvislost)
-        serial.writeValue("Poloha (cm)", _lastS);
-
-        basic.pause(100);
+        // ZVÝŠENÁ PAUZA (150 ms)
+        basic.pause(150);
     }
 
     // =========================================================================
     // --- SDÍLENÉ JÁDRO PRO SONAR ---
     // =========================================================================
-    // Tato funkce dělá všechnu práci. Bloky nahoře si z ní jen berou výsledky.
 
     function updateSonarData(trig: DigitalPin, echo: DigitalPin): void {
-        // 1. Změříme aktuální čas a vzdálenost
         let t = control.millis();
         let s = InternalSonar.ping(trig, echo, 1); // cm
 
-        // Pokud je senzor mimo rozsah nebo chyba, neaktualizujeme nic a končíme
-        // (V paměti zůstanou poslední platné hodnoty)
+        // Platné rozmezí a filtrace chyb
         if (s == 0 || s >= 400) return;
 
-        // Inicializace při prvním spuštění
+        // Inicializace
         if (_lastS == 0 && _lastT == 0) {
             _lastS = s;
             _lastT = t;
@@ -215,26 +207,18 @@ namespace FyzikalniSenzory {
             return;
         }
 
-        // 2. Výpočet rychlosti (pokud uplynul dostatečný čas)
+        // Výpočet rychlosti
         let dt = (t - _lastT) / 1000.0; // sekundy
 
-        // Filtr času: aspoň 20 ms, aby to nebyl šum
-        // (Ale protože voláme pause(100), bude to typicky kolem 0.1s)
+        // Filtr času: aspoň 20 ms
         if (dt > 0.02) {
-            // cm/s = (rozdíl drah) / (rozdíl časů)
             let v = (s - _lastS) / dt;
-
-            // Uložíme vypočtenou rychlost do globální paměti
             _lastV = v;
 
-            // Posuneme čas a dráhu pro příští kolo
             _lastS = s;
             _lastT = t;
         }
-        // Pokud dt <= 0.02, neděláme nic (čekáme na další cyklus pro větší přesnost),
-        // ale _lastS a _lastT neměníme, aby se rozdíl nasčítal.
     }
-
 }
 
 // =============================================================================
