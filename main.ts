@@ -1,7 +1,7 @@
 /**
  * Školní rozšíření pro fyzikální měření: Teplota, Síla, Vzdálenost.
  */
-//% weight=120 color=#2E8B57 icon="\uf0c3" block="Fyzikální senzory"
+//% weight=100 color=#2E8B57 icon="\uf0c3" block="Fyzikální senzory"
 namespace FyzikalniSenzory {
 
     export enum RychlostniJednotka {
@@ -15,7 +15,9 @@ namespace FyzikalniSenzory {
         //% block="cm"
         Cm,
         //% block="m"
-        M
+        M,
+        //% block="ms (čas)"
+        Ms
     }
 
     // ==========================================
@@ -44,8 +46,8 @@ namespace FyzikalniSenzory {
     // --- 2. SILOMĚR (HX711) ---
     // ==========================================
 
+    // Tady necháváme to, co fungovalo (medián a tvá kalibrace)
     let my_offset = 0;
-    // Kalibrace dle tvého měření (-10578)
     let my_scale = -10578;
 
     let last_dout = DigitalPin.P15;
@@ -62,7 +64,6 @@ namespace FyzikalniSenzory {
         HX711.SetPIN_SCK(sckPin);
         HX711.begin();
 
-        // Medián (3 hodnoty)
         let val1 = HX711.read();
         let val2 = HX711.read();
         let val3 = HX711.read();
@@ -113,22 +114,23 @@ namespace FyzikalniSenzory {
 
 
     // ==========================================
-    // --- 3. VZDÁLENOST A RYCHLOST ---
+    // --- 3. VZDÁLENOST A RYCHLOST (SONAR) ---
     // ==========================================
 
     let lastS = 0;
     let lastT = 0;
 
     /**
-     * Změří vzdálenost (zabudovaný sonar přímo v kódu).
+     * Změří vzdálenost.
+     * Používá identickou logiku jako pxt-sonar.
      */
     //% block="změřená vzdálenost v %jednotka | Trig %trigPin | Echo %echoPin"
     //% group="3. Vzdálenost (Sonar)"
     //% weight=80
     //% parts="sonar"
     export function zmeritVzdalenost(jednotka: VzdalenostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
-        // Použijeme naši interní funkci, která je kopií té z knihovny sonar
-        let d_cm = measureDistanceCm(trigPin, echoPin);
+        // Voláme naši interní funkci (vypůjčenou z pxt-sonar)
+        let d_cm = helper_ping(trigPin, echoPin);
 
         // Aktualizace paměti pro rychlost (aby navazovala)
         if (d_cm > 0) {
@@ -136,10 +138,17 @@ namespace FyzikalniSenzory {
             lastT = control.millis() / 10;
         }
 
-        if (jednotka == VzdalenostniJednotka.Cm) {
-            return Math.round(d_cm);
-        } else {
-            return Math.round((d_cm / 100) * 100) / 100; // Metry na 2 desetinná
+        switch (jednotka) {
+            case VzdalenostniJednotka.Cm:
+                return Math.idiv(d_cm, 1); // Celá čísla
+            case VzdalenostniJednotka.M:
+                return d_cm / 100;
+            case VzdalenostniJednotka.Ms:
+                // d_cm = (duration / 58). Takže duration = d_cm * 58. 
+                // Výsledek chceme v ms (ne us), takže / 1000.
+                return Math.round((d_cm * 58) / 1000);
+            default:
+                return 0;
         }
     }
 
@@ -151,47 +160,45 @@ namespace FyzikalniSenzory {
         let val = zmeritVzdalenost(jednotka, trigPin, echoPin);
 
         if (jednotka == VzdalenostniJednotka.Cm) serial.writeValue("Vzdalenost (cm)", val);
-        else serial.writeValue("Vzdalenost (m)", val);
+        else if (jednotka == VzdalenostniJednotka.M) serial.writeValue("Vzdalenost (m)", val);
+        else serial.writeValue("Cas (ms)", val);
 
-        basic.pause(60);
+        basic.pause(50);
     }
 
     /**
-     * Vypočítá rychlost.
-     * Vzorec: v = (s - lastS) / (t - lastT)
+     * Vypočítá rychlost na základě tvého vzorce: v = (s - lastS) / (t - lastT).
      */
     //% block="změřená rychlost v %jednotka | Trig %trigPin | Echo %echoPin"
     //% group="3. Vzdálenost (Sonar)"
     //% weight=70
     export function zmeritRychlost(jednotka: RychlostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
-        // 1. Změříme aktuální 's' (v cm)
-        let s = measureDistanceCm(trigPin, echoPin);
-
-        // 2. Změříme aktuální 't' (v desetinách sekundy, dle tvého kódu)
+        // 1. Změříme aktuální data
+        let s = helper_ping(trigPin, echoPin);
         let t = control.millis() / 10;
 
-        if (s == 0) return 0; // Chyba senzoru
+        if (s == 0) return 0; // Chyba senzoru - nepočítáme
 
-        // První spuštění
+        // Inicializace při prvním spuštění
         if (lastT == 0) {
             lastS = s;
             lastT = t;
             return 0;
         }
 
-        // 3. Výpočet
+        // 2. Výpočet (tvůj vzorec)
         let dt = t - lastT;
         if (dt <= 0) return 0;
 
-        let v = (s - lastS) / dt;
+        let v = (s - lastS) / dt; // Výsledek je v m/s
 
-        // 4. Uložení
+        // 3. Uložení
         lastS = s;
         lastT = t;
 
-        // 5. Převod
+        // 4. Převod
         if (jednotka == RychlostniJednotka.Ms) {
-            return v; // Je to v m/s
+            return v;
         } else {
             return v * 3.6; // km/h
         }
@@ -209,10 +216,16 @@ namespace FyzikalniSenzory {
         basic.pause(100);
     }
 
-    // --- INTERNÍ FUNKCE (Kopie z knihovny sonar) ---
-    // Toto řeší problém "Cannot find name 'sonar'"
-    function measureDistanceCm(trig: DigitalPin, echo: DigitalPin): number {
-        // send pulse
+    // =========================================================================
+    // --- INTERNÍ HELPER (Kopie 1:1 z knihovny pxt-sonar) ---
+    // =========================================================================
+    // Tímto obcházíme problém se jmény a závislostmi. 
+    // Toto je přesně ten kód, který funguje v originálním rozšíření.
+
+    function helper_ping(trig: DigitalPin, echo: DigitalPin): number {
+        // maxCmDistance nastaveno na 500 (default z pxt-sonar)
+        let maxCmDistance = 500;
+
         pins.setPull(trig, PinPullMode.PullNone);
         pins.digitalWritePin(trig, 0);
         control.waitMicros(2);
@@ -220,11 +233,10 @@ namespace FyzikalniSenzory {
         control.waitMicros(10);
         pins.digitalWritePin(trig, 0);
 
-        // read pulse (max distance 500cm = 500 * 58 micros)
-        const d = pins.pulseIn(echo, PulseValue.High, 500 * 58);
+        // read pulse
+        const d = pins.pulseIn(echo, PulseValue.High, maxCmDistance * 58);
 
-        // Vracíme cm (vycházíme z toho, že 58us = 1cm)
-        // Používám float dělení pro přesnost rychlosti, u vzdálenosti si to zaokrouhlí blok
-        return d / 58;
+        // Vracíme centimetry (d / 58)
+        return Math.idiv(d, 58);
     }
 }
