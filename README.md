@@ -47,7 +47,7 @@ Rozšíření nabízí dva hlavní bloky:
 ---
 
 ## 2. Siloměr a Váha (HX711) ⚖️
-Měření síly (v Newtonech) nebo hmotnosti pomocí tenzometrického členu a převodníku HX711.
+Měření síly (v Newtonech) nebo hmotnosti pomocí tenzometrického členu pro max 20 kg a převodníku HX711.
 
 ### Zapojení
 Převodník HX711 vyžaduje dva piny: **DT** (Data) a **SCK** (Clock).
