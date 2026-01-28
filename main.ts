@@ -1,7 +1,3 @@
-/**
- * Školní rozšíření pro fyzikální měření: Teplota, Síla, Vzdálenost.
- */
-//% weight=100 color=#2E8B57 icon="\uf0c3" block="Fyzikální senzory"
 namespace FyzikalniSenzory {
 
     export enum RychlostniJednotka {
@@ -18,6 +14,16 @@ namespace FyzikalniSenzory {
         M
     }
 
+    // NOVÉ: Enum pro tlak
+    export enum TlakovaJednotka {
+        //% block="Pa"
+        Pa,
+        //% block="hPa"
+        HPa,
+        //% block="atm"
+        Atm
+    }
+
     // ==========================================
     // --- 1. TEPLOMĚR (DS18B20) ---
     // ==========================================
@@ -25,7 +31,6 @@ namespace FyzikalniSenzory {
     //% block="změřená teplota (°C) na pinu %pin"
     //% group="1. Teplota"
     //% weight=100
-   
     export function zmeritTeplotu(pin: DigitalPin): number {
         return dstemp.celsius(pin);
     }
@@ -149,10 +154,10 @@ namespace FyzikalniSenzory {
     //% group="3. Vzdálenost"
     //% weight=79
     export function zmeritVzdalenostAGraf(jednotka: VzdalenostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): void {
-        let val = zmeritVzdalenost(jednotka, trigPin, echoPin);
+        let val4 = zmeritVzdalenost(jednotka, trigPin, echoPin);
 
-        if (jednotka == VzdalenostniJednotka.Cm) serial.writeValue("Vzdalenost (cm)", val);
-        else serial.writeValue("Vzdalenost (m)", val);
+        if (jednotka == VzdalenostniJednotka.Cm) serial.writeValue("Vzdalenost (cm)", val4);
+        else serial.writeValue("Vzdalenost (m)", val4);
 
         // ZVÝŠENÁ PAUZA DLE POŽADAVKU
         basic.pause(200);
@@ -170,31 +175,31 @@ namespace FyzikalniSenzory {
     //% weight=70
     export function zmeritRychlost(jednotka: RychlostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
         // 1. Změříme aktuální data
-        let s = InternalSonar.ping(trigPin, echoPin, 1); // cm
-        let t = control.millis(); // ms
+        let u = InternalSonar.ping(trigPin, echoPin, 1); // cm
+        let v = control.millis(); // ms
 
         let v_cm_s = 0; // Výchozí rychlost (když stojíme nebo je chyba)
 
         // 2. Aplikace tvého filtru
         // - s musí být v rozmezí 0-400 (platné měření)
         // - _lastS musí být > 0 (tzn. minulé měření bylo platné)
-        if (s > 0 && s < 400 && _lastS > 0) {
+        if (u > 0 && u < 400 && _lastS > 0) {
 
             // Časový rozdíl v sekundách
-            let dt = (t - _lastT) / 1000.0;
+            let dt = (v - _lastT) / 1000.0;
 
             // Filtr času: aspoň 20 ms rozestup, jinak je to šum
             if (dt > 0.02) {
                 // Výpočet rychlosti v cm/s
                 // Může vyjít záporná (přibližování) nebo kladná (vzdalování)
-                v_cm_s = (s - _lastS) / dt;
+                v_cm_s = (u - _lastS) / dt;
             }
         }
 
         // 3. Aktualizace paměti
         // Ukládáme vždy, pokud je měření platné, nebo pokud je to jen reset
-        _lastS = s;
-        _lastT = t;
+        _lastS = u;
+        _lastT = v;
 
         // 4. Převod jednotek
         if (jednotka == RychlostniJednotka.Ms) {
@@ -209,11 +214,11 @@ namespace FyzikalniSenzory {
     //% weight=69
     export function zmeritRychlostAGraf(jednotka: RychlostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): void {
         // Zavoláme funkci pro rychlost (ta si sama změří i vzdálenost a aktualizuje stav)
-        let v = zmeritRychlost(jednotka, trigPin, echoPin);
+        let w = zmeritRychlost(jednotka, trigPin, echoPin);
 
         // Do grafu pošleme rychlost
-        if (jednotka == RychlostniJednotka.Ms) serial.writeValue("Rychlost (m/s)", v);
-        else serial.writeValue("Rychlost (km/h)", v);
+        if (jednotka == RychlostniJednotka.Ms) serial.writeValue("Rychlost (m/s)", w);
+        else serial.writeValue("Rychlost (km/h)", w);
 
         // A pošleme tam I VZDÁLENOST, abys viděl souvislost (jestli rychlost sedí k pohybu)
         // Použijeme _lastS, což je hodnota, ze které se rychlost počítala
@@ -222,11 +227,98 @@ namespace FyzikalniSenzory {
         // ZVÝŠENÁ PAUZA
         basic.pause(200);
     }
+
+    // ==========================================
+    // --- 5. TLAK (HX710B) ---
+    // ==========================================
+
+    // Vlastní proměnné pro tlak, aby se nehádaly se siloměrem
+    let press_offset = 0;
+    // Výchozí měřítko - nutno zkalibrovat! (raw hodnota -> Pa)
+    let press_scale = 100;
+
+    // Ukládáme piny pro tárování
+    let last_press_dout = DigitalPin.P0;
+    let last_press_sck = DigitalPin.P1;
+
+    //% block="změřený tlak (%jednotka) | DT %doutPin | SCK %sckPin"
+    //% group="5. Tlak (HX710B)"
+    //% weight=60
+    export function zmeritTlak(jednotka: TlakovaJednotka, doutPin: DigitalPin, sckPin: DigitalPin): number {
+        last_press_dout = doutPin;
+        last_press_sck = sckPin;
+
+        // Používáme stejný driver HX711, protokol je shodný
+        HX711.SetPIN_DOUT(doutPin);
+        HX711.SetPIN_SCK(sckPin);
+        HX711.begin();
+
+        // Medián (3 hodnoty pro stabilitu)
+        let val1 = HX711.read();
+        let val2 = HX711.read();
+        let val3 = HX711.read();
+
+        let maxVal = Math.max(val1, Math.max(val2, val3));
+        let minVal = Math.min(val1, Math.min(val2, val3));
+        let raw_median = (val1 + val2 + val3) - maxVal - minVal;
+
+        if (press_scale == 0) press_scale = 1;
+
+        // Výpočet v Pascalech (základní jednotka)
+        let pascaly = (raw_median - press_offset) / press_scale;
+
+        // Převod na požadovanou jednotku
+        switch (jednotka) {
+            case TlakovaJednotka.Pa:
+                return Math.round(pascaly);
+            case TlakovaJednotka.HPa:
+                return Math.round((pascaly / 100) * 10) / 10; // 1 hPa = 100 Pa
+            case TlakovaJednotka.Atm:
+                return pascaly / 101325; // 1 atm = 101325 Pa
+            default:
+                return 0;
+        }
+    }
+
+    //% block="změřit tlak a kreslit graf (%jednotka) | DT %doutPin | SCK %sckPin"
+    //% group="5. Tlak (HX710B)"
+    //% weight=59
+    export function zmeritTlakAGraf(jednotka: TlakovaJednotka, doutPin: DigitalPin, sckPin: DigitalPin): void {
+        let p = zmeritTlak(jednotka, doutPin, sckPin);
+
+        if (jednotka == TlakovaJednotka.Pa) serial.writeValue("Tlak (Pa)", p);
+        else if (jednotka == TlakovaJednotka.HPa) serial.writeValue("Tlak (hPa)", p);
+        else serial.writeValue("Tlak (atm)", p);
+
+        basic.pause(100);
+    }
+
+    //% block="vynulovat tlakoměr (tára)"
+    //% group="5. Tlak (HX710B)"
+    //% weight=58
+    export function tarovatTlakomer(): void {
+        HX711.SetPIN_DOUT(last_press_dout);
+        HX711.SetPIN_SCK(last_press_sck);
+        HX711.begin();
+
+        let pole: number[] = [];
+        for (let i = 0; i < 5; i++) {
+            pole.push(HX711.read());
+            basic.pause(10);
+        }
+        pole.sort((a, b) => a - b);
+        press_offset = pole[2];
+    }
+
+    //% block="kalibrovat tlakoměr (dílků na 1 Pa): %meritko"
+    //% group="5. Tlak (HX710B)"
+    //% advanced=true
+    export function nastavitMeritkoTlaku(meritko: number): void {
+        if (meritko == 0) meritko = 1;
+        press_scale = meritko;
+    }
 }
 
-// =============================================================================
-// --- INTERNÍ SONAR ---
-// =============================================================================
 namespace InternalSonar {
     export function ping(trig: DigitalPin, echo: DigitalPin, unit: number, maxCmDistance = 500): number {
         pins.setPull(trig, PinPullMode.PullNone);
