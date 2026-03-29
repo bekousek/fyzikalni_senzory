@@ -1,0 +1,16 @@
+{
+    "FyzikalniSenzory.zmeritTeplotu": "使用 DS18B20 传感器测量温度。",
+    "FyzikalniSenzory.zmeritTeplotuAGraf": "测量温度并将数据发送到串口以绘制图表。",
+    "FyzikalniSenzory.zmeritSilu": "使用 HX711 称重传感器放大器测量力。使用中值滤波器。",
+    "FyzikalniSenzory.zmeritSiluAGraf": "测量力并将数据发送到串口以绘制图表。",
+    "FyzikalniSenzory.tarovatSilomer": "测力计归零（去皮）。测量前请先调用此功能。",
+    "FyzikalniSenzory.nastavitMeritko": "校准测力计的比例系数。",
+    "FyzikalniSenzory.zmeritVzdalenost": "使用 HC-SR04 超声波传感器测量距离。",
+    "FyzikalniSenzory.zmeritVzdalenostAGraf": "测量距离并将数据发送到串口以绘制图表。",
+    "FyzikalniSenzory.zmeritRychlost": "根据连续距离测量计算速度。",
+    "FyzikalniSenzory.zmeritRychlostAGraf": "计算速度并将数据发送到串口以绘制图表。",
+    "FyzikalniSenzory.zmeritTlak": "使用 HX710B 传感器测量气压。",
+    "FyzikalniSenzory.zmeritTlakAGraf": "测量气压并将数据发送到串口以绘制图表。",
+    "FyzikalniSenzory.tarovatTlakomer": "气压计归零（去皮）。测量前请先调用此功能。",
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "校准气压计的比例系数。"
+}

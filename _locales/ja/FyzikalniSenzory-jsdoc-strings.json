@@ -1,0 +1,16 @@
+{
+    "FyzikalniSenzory.zmeritTeplotu": "DS18B20センサーを使用して温度を測定します。",
+    "FyzikalniSenzory.zmeritTeplotuAGraf": "温度を測定し、グラフ描画のためにシリアルポートにデータを送信します。",
+    "FyzikalniSenzory.zmeritSilu": "HX711ロードセルアンプを使用して力を測定します。メディアンフィルターを使用します。",
+    "FyzikalniSenzory.zmeritSiluAGraf": "力を測定し、グラフ描画のためにシリアルポートにデータを送信します。",
+    "FyzikalniSenzory.tarovatSilomer": "力計をゼロにします（風袋）。測定前に呼び出してください。",
+    "FyzikalniSenzory.nastavitMeritko": "力計のスケールファクターを校正します。",
+    "FyzikalniSenzory.zmeritVzdalenost": "HC-SR04超音波センサーを使用して距離を測定します。",
+    "FyzikalniSenzory.zmeritVzdalenostAGraf": "距離を測定し、グラフ描画のためにシリアルポートにデータを送信します。",
+    "FyzikalniSenzory.zmeritRychlost": "連続した距離測定から速度を計算します。",
+    "FyzikalniSenzory.zmeritRychlostAGraf": "速度を計算し、グラフ描画のためにシリアルポートにデータを送信します。",
+    "FyzikalniSenzory.zmeritTlak": "HX710Bセンサーを使用して気圧を測定します。",
+    "FyzikalniSenzory.zmeritTlakAGraf": "気圧を測定し、グラフ描画のためにシリアルポートにデータを送信します。",
+    "FyzikalniSenzory.tarovatTlakomer": "気圧計をゼロにします（風袋）。測定前に呼び出してください。",
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "気圧計のスケールファクターを校正します。"
+}

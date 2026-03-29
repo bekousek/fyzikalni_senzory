@@ -1,0 +1,16 @@
+{
+    "FyzikalniSenzory.zmeritTeplotu": "Meria teplotu pomocou snímača DS18B20.",
+    "FyzikalniSenzory.zmeritTeplotuAGraf": "Meria teplotu a odosiela údaje na sériový port na kreslenie grafu.",
+    "FyzikalniSenzory.zmeritSilu": "Meria silu pomocou zosilňovača tenzometra HX711. Používa mediánový filter.",
+    "FyzikalniSenzory.zmeritSiluAGraf": "Meria silu a odosiela údaje na sériový port na kreslenie grafu.",
+    "FyzikalniSenzory.tarovatSilomer": "Vynuluje silomer (tára). Zavolajte pred meraním.",
+    "FyzikalniSenzory.nastavitMeritko": "Kalibruje mierku silomera.",
+    "FyzikalniSenzory.zmeritVzdalenost": "Meria vzdialenosť pomocou ultrazvukového snímača HC-SR04.",
+    "FyzikalniSenzory.zmeritVzdalenostAGraf": "Meria vzdialenosť a odosiela údaje na sériový port na kreslenie grafu.",
+    "FyzikalniSenzory.zmeritRychlost": "Vypočíta rýchlosť z po sebe idúcich meraní vzdialenosti.",
+    "FyzikalniSenzory.zmeritRychlostAGraf": "Vypočíta rýchlosť a odosiela údaje na sériový port na kreslenie grafu.",
+    "FyzikalniSenzory.zmeritTlak": "Meria tlak pomocou snímača HX710B.",
+    "FyzikalniSenzory.zmeritTlakAGraf": "Meria tlak a odosiela údaje na sériový port na kreslenie grafu.",
+    "FyzikalniSenzory.tarovatTlakomer": "Vynuluje tlakomer (tára). Zavolajte pred meraním.",
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "Kalibruje mierku tlakomera."
+}

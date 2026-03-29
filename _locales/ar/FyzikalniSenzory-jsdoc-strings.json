@@ -1,0 +1,16 @@
+{
+    "FyzikalniSenzory.zmeritTeplotu": "يقيس درجة الحرارة باستخدام مستشعر DS18B20.",
+    "FyzikalniSenzory.zmeritTeplotuAGraf": "يقيس درجة الحرارة ويرسل البيانات إلى المنفذ التسلسلي لرسم الرسم البياني.",
+    "FyzikalniSenzory.zmeritSilu": "يقيس القوة باستخدام مضخم خلية الحمل HX711. يستخدم مرشح الوسيط.",
+    "FyzikalniSenzory.zmeritSiluAGraf": "يقيس القوة ويرسل البيانات إلى المنفذ التسلسلي لرسم الرسم البياني.",
+    "FyzikalniSenzory.tarovatSilomer": "يصفّر مقياس القوة (وزن فارغ). استدعِ هذا قبل القياس.",
+    "FyzikalniSenzory.nastavitMeritko": "يعاير معامل مقياس القوة.",
+    "FyzikalniSenzory.zmeritVzdalenost": "يقيس المسافة باستخدام مستشعر الموجات فوق الصوتية HC-SR04.",
+    "FyzikalniSenzory.zmeritVzdalenostAGraf": "يقيس المسافة ويرسل البيانات إلى المنفذ التسلسلي لرسم الرسم البياني.",
+    "FyzikalniSenzory.zmeritRychlost": "يحسب السرعة من قياسات المسافة المتتالية.",
+    "FyzikalniSenzory.zmeritRychlostAGraf": "يحسب السرعة ويرسل البيانات إلى المنفذ التسلسلي لرسم الرسم البياني.",
+    "FyzikalniSenzory.zmeritTlak": "يقيس الضغط باستخدام مستشعر HX710B.",
+    "FyzikalniSenzory.zmeritTlakAGraf": "يقيس الضغط ويرسل البيانات إلى المنفذ التسلسلي لرسم الرسم البياني.",
+    "FyzikalniSenzory.tarovatTlakomer": "يصفّر مقياس الضغط (وزن فارغ). استدعِ هذا قبل القياس.",
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "يعاير معامل مقياس الضغط."
+}

@@ -1,0 +1,16 @@
+{
+    "FyzikalniSenzory.zmeritTeplotu": "DS18B20 सेंसर का उपयोग करके तापमान मापता है।",
+    "FyzikalniSenzory.zmeritTeplotuAGraf": "तापमान मापता है और ग्राफ बनाने के लिए सीरियल पोर्ट पर डेटा भेजता है।",
+    "FyzikalniSenzory.zmeritSilu": "HX711 लोड सेल एम्पलीफायर का उपयोग करके बल मापता है। मीडियन फिल्टर का उपयोग करता है।",
+    "FyzikalniSenzory.zmeritSiluAGraf": "बल मापता है और ग्राफ बनाने के लिए सीरियल पोर्ट पर डेटा भेजता है।",
+    "FyzikalniSenzory.tarovatSilomer": "बल मापक को शून्य करता है (टेयर)। मापने से पहले इसे कॉल करें।",
+    "FyzikalniSenzory.nastavitMeritko": "बल मापक के स्केल फैक्टर को अंशांकित करता है।",
+    "FyzikalniSenzory.zmeritVzdalenost": "HC-SR04 अल्ट्रासोनिक सेंसर का उपयोग करके दूरी मापता है।",
+    "FyzikalniSenzory.zmeritVzdalenostAGraf": "दूरी मापता है और ग्राफ बनाने के लिए सीरियल पोर्ट पर डेटा भेजता है।",
+    "FyzikalniSenzory.zmeritRychlost": "लगातार दूरी मापन से गति की गणना करता है।",
+    "FyzikalniSenzory.zmeritRychlostAGraf": "गति की गणना करता है और ग्राफ बनाने के लिए सीरियल पोर्ट पर डेटा भेजता है।",
+    "FyzikalniSenzory.zmeritTlak": "HX710B सेंसर का उपयोग करके दबाव मापता है।",
+    "FyzikalniSenzory.zmeritTlakAGraf": "दबाव मापता है और ग्राफ बनाने के लिए सीरियल पोर्ट पर डेटा भेजता है।",
+    "FyzikalniSenzory.tarovatTlakomer": "दबाव मापक को शून्य करता है (टेयर)। मापने से पहले इसे कॉल करें।",
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "दबाव मापक के स्केल फैक्टर को अंशांकित करता है।"
+}

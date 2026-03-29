@@ -1,0 +1,16 @@
+{
+    "FyzikalniSenzory.zmeritTeplotu": "DS18B20 সেন্সর ব্যবহার করে তাপমাত্রা পরিমাপ করে।",
+    "FyzikalniSenzory.zmeritTeplotuAGraf": "তাপমাত্রা পরিমাপ করে এবং গ্রাফ আঁকতে সিরিয়াল পোর্টে ডেটা পাঠায়।",
+    "FyzikalniSenzory.zmeritSilu": "HX711 লোড সেল অ্যাম্প্লিফায়ার ব্যবহার করে বল পরিমাপ করে। মিডিয়ান ফিল্টার ব্যবহার করে।",
+    "FyzikalniSenzory.zmeritSiluAGraf": "বল পরিমাপ করে এবং গ্রাফ আঁকতে সিরিয়াল পোর্টে ডেটা পাঠায়।",
+    "FyzikalniSenzory.tarovatSilomer": "বলমাপক শূন্য করে (টেয়ার)। পরিমাপের আগে এটি কল করুন।",
+    "FyzikalniSenzory.nastavitMeritko": "বলমাপকের স্কেল ফ্যাক্টর ক্যালিব্রেট করে।",
+    "FyzikalniSenzory.zmeritVzdalenost": "HC-SR04 আল্ট্রাসনিক সেন্সর ব্যবহার করে দূরত্ব পরিমাপ করে।",
+    "FyzikalniSenzory.zmeritVzdalenostAGraf": "দূরত্ব পরিমাপ করে এবং গ্রাফ আঁকতে সিরিয়াল পোর্টে ডেটা পাঠায়।",
+    "FyzikalniSenzory.zmeritRychlost": "ধারাবাহিক দূরত্ব পরিমাপ থেকে গতি গণনা করে।",
+    "FyzikalniSenzory.zmeritRychlostAGraf": "গতি গণনা করে এবং গ্রাফ আঁকতে সিরিয়াল পোর্টে ডেটা পাঠায়।",
+    "FyzikalniSenzory.zmeritTlak": "HX710B সেন্সর ব্যবহার করে চাপ পরিমাপ করে।",
+    "FyzikalniSenzory.zmeritTlakAGraf": "চাপ পরিমাপ করে এবং গ্রাফ আঁকতে সিরিয়াল পোর্টে ডেটা পাঠায়।",
+    "FyzikalniSenzory.tarovatTlakomer": "চাপমাপক শূন্য করে (টেয়ার)। পরিমাপের আগে এটি কল করুন।",
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "চাপমাপকের স্কেল ফ্যাক্টর ক্যালিব্রেট করে।"
+}
