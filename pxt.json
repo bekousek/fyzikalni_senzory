@@ -1,11 +1,9 @@
 {
     "name": "senzory",
-    "version": "1.1.0",
-    "description": "",
+    "version": "1.2.0",
+    "description": "Rozšíření pro výuku fyziky – teploměr (DS18B20), siloměr (HX711), sonar (HC-SR04), tlakoměr (HX710B)",
     "dependencies": {
         "core": "*",
-        "radio": "*",
-        "microphone": "*",
         "microbit-dstemp": "github:bsiever/microbit-dstemp#v0.1.26",
         "pxt-HX711": "github:daferdur/pxt-myhx711#v1.0.18"
     },
@@ -13,7 +11,33 @@
         "main.blocks",
         "main.ts",
         "README.md",
-        "main.py"
+        "main.py",
+        "_locales/en/FyzikalniSenzory-strings.json",
+        "_locales/en/FyzikalniSenzory-jsdoc-strings.json",
+        "_locales/zh/FyzikalniSenzory-strings.json",
+        "_locales/zh/FyzikalniSenzory-jsdoc-strings.json",
+        "_locales/hi/FyzikalniSenzory-strings.json",
+        "_locales/hi/FyzikalniSenzory-jsdoc-strings.json",
+        "_locales/es/FyzikalniSenzory-strings.json",
+        "_locales/es/FyzikalniSenzory-jsdoc-strings.json",
+        "_locales/fr/FyzikalniSenzory-strings.json",
+        "_locales/fr/FyzikalniSenzory-jsdoc-strings.json",
+        "_locales/ar/FyzikalniSenzory-strings.json",
+        "_locales/ar/FyzikalniSenzory-jsdoc-strings.json",
+        "_locales/bn/FyzikalniSenzory-strings.json",
+        "_locales/bn/FyzikalniSenzory-jsdoc-strings.json",
+        "_locales/pt/FyzikalniSenzory-strings.json",
+        "_locales/pt/FyzikalniSenzory-jsdoc-strings.json",
+        "_locales/ru/FyzikalniSenzory-strings.json",
+        "_locales/ru/FyzikalniSenzory-jsdoc-strings.json",
+        "_locales/ja/FyzikalniSenzory-strings.json",
+        "_locales/ja/FyzikalniSenzory-jsdoc-strings.json",
+        "_locales/pl/FyzikalniSenzory-strings.json",
+        "_locales/pl/FyzikalniSenzory-jsdoc-strings.json",
+        "_locales/de/FyzikalniSenzory-strings.json",
+        "_locales/de/FyzikalniSenzory-jsdoc-strings.json",
+        "_locales/sk/FyzikalniSenzory-strings.json",
+        "_locales/sk/FyzikalniSenzory-jsdoc-strings.json"
     ],
     "testFiles": [
         "test.ts"

@@ -1,0 +1,16 @@
+{
+    "FyzikalniSenzory.zmeritTeplotu": "Mide la temperatura con el sensor DS18B20.",
+    "FyzikalniSenzory.zmeritTeplotuAGraf": "Mide la temperatura y envía datos al puerto serie para graficar.",
+    "FyzikalniSenzory.zmeritSilu": "Mide la fuerza con el amplificador de celda de carga HX711. Usa un filtro de mediana.",
+    "FyzikalniSenzory.zmeritSiluAGraf": "Mide la fuerza y envía datos al puerto serie para graficar.",
+    "FyzikalniSenzory.tarovatSilomer": "Pone a cero el dinamómetro (tara). Llame antes de medir.",
+    "FyzikalniSenzory.nastavitMeritko": "Calibra el factor de escala del dinamómetro.",
+    "FyzikalniSenzory.zmeritVzdalenost": "Mide la distancia con el sensor ultrasónico HC-SR04.",
+    "FyzikalniSenzory.zmeritVzdalenostAGraf": "Mide la distancia y envía datos al puerto serie para graficar.",
+    "FyzikalniSenzory.zmeritRychlost": "Calcula la velocidad a partir de mediciones de distancia consecutivas.",
+    "FyzikalniSenzory.zmeritRychlostAGraf": "Calcula la velocidad y envía datos al puerto serie para graficar.",
+    "FyzikalniSenzory.zmeritTlak": "Mide la presión con el sensor HX710B.",
+    "FyzikalniSenzory.zmeritTlakAGraf": "Mide la presión y envía datos al puerto serie para graficar.",
+    "FyzikalniSenzory.tarovatTlakomer": "Pone a cero el manómetro (tara). Llame antes de medir.",
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "Calibra el factor de escala del manómetro."
+}

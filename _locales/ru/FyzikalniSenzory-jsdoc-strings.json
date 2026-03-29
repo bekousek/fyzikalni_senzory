@@ -1,0 +1,16 @@
+{
+    "FyzikalniSenzory.zmeritTeplotu": "Измеряет температуру с помощью датчика DS18B20.",
+    "FyzikalniSenzory.zmeritTeplotuAGraf": "Измеряет температуру и отправляет данные на последовательный порт для построения графика.",
+    "FyzikalniSenzory.zmeritSilu": "Измеряет силу с помощью усилителя тензодатчика HX711. Использует медианный фильтр.",
+    "FyzikalniSenzory.zmeritSiluAGraf": "Измеряет силу и отправляет данные на последовательный порт для построения графика.",
+    "FyzikalniSenzory.tarovatSilomer": "Обнуляет динамометр (тара). Вызовите перед измерением.",
+    "FyzikalniSenzory.nastavitMeritko": "Калибрует масштабный коэффициент динамометра.",
+    "FyzikalniSenzory.zmeritVzdalenost": "Измеряет расстояние с помощью ультразвукового датчика HC-SR04.",
+    "FyzikalniSenzory.zmeritVzdalenostAGraf": "Измеряет расстояние и отправляет данные на последовательный порт для построения графика.",
+    "FyzikalniSenzory.zmeritRychlost": "Вычисляет скорость по последовательным измерениям расстояния.",
+    "FyzikalniSenzory.zmeritRychlostAGraf": "Вычисляет скорость и отправляет данные на последовательный порт для построения графика.",
+    "FyzikalniSenzory.zmeritTlak": "Измеряет давление с помощью датчика HX710B.",
+    "FyzikalniSenzory.zmeritTlakAGraf": "Измеряет давление и отправляет данные на последовательный порт для построения графика.",
+    "FyzikalniSenzory.tarovatTlakomer": "Обнуляет манометр (тара). Вызовите перед измерением.",
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "Калибрует масштабный коэффициент манометра."
+}

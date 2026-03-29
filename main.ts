@@ -144,7 +144,7 @@ namespace FyzikalniSenzory {
             case VzdalenostniJednotka.Cm:
                 return s;
             case VzdalenostniJednotka.M:
-                return s / 100;
+                return Math.round(s * 10 / 100) / 10; // zaokrouhlení na 1 des. místo
             default:
                 return 0;
         }
@@ -201,11 +201,11 @@ namespace FyzikalniSenzory {
         _lastS = u;
         _lastT = v;
 
-        // 4. Převod jednotek
+        // 4. Převod jednotek a zaokrouhlení na 2 desetinná místa
         if (jednotka == RychlostniJednotka.Ms) {
-            return v_cm_s / 100.0; // cm/s -> m/s
+            return Math.round(v_cm_s / 100.0 * 100) / 100; // cm/s -> m/s
         } else {
-            return (v_cm_s / 100.0) * 3.6; // m/s -> km/h
+            return Math.round((v_cm_s / 100.0) * 3.6 * 100) / 100; // m/s -> km/h
         }
     }
 

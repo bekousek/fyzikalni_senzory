@@ -1,0 +1,16 @@
+{
+    "FyzikalniSenzory.zmeritTeplotu": "Mede a temperatura com o sensor DS18B20.",
+    "FyzikalniSenzory.zmeritTeplotuAGraf": "Mede a temperatura e envia dados para a porta serial para plotar o gráfico.",
+    "FyzikalniSenzory.zmeritSilu": "Mede a força com o amplificador de célula de carga HX711. Usa um filtro de mediana.",
+    "FyzikalniSenzory.zmeritSiluAGraf": "Mede a força e envia dados para a porta serial para plotar o gráfico.",
+    "FyzikalniSenzory.tarovatSilomer": "Zera o dinamômetro (tara). Chame antes de medir.",
+    "FyzikalniSenzory.nastavitMeritko": "Calibra o fator de escala do dinamômetro.",
+    "FyzikalniSenzory.zmeritVzdalenost": "Mede a distância com o sensor ultrassônico HC-SR04.",
+    "FyzikalniSenzory.zmeritVzdalenostAGraf": "Mede a distância e envia dados para a porta serial para plotar o gráfico.",
+    "FyzikalniSenzory.zmeritRychlost": "Calcula a velocidade a partir de medições de distância consecutivas.",
+    "FyzikalniSenzory.zmeritRychlostAGraf": "Calcula a velocidade e envia dados para a porta serial para plotar o gráfico.",
+    "FyzikalniSenzory.zmeritTlak": "Mede a pressão com o sensor HX710B.",
+    "FyzikalniSenzory.zmeritTlakAGraf": "Mede a pressão e envia dados para a porta serial para plotar o gráfico.",
+    "FyzikalniSenzory.tarovatTlakomer": "Zera o manômetro (tara). Chame antes de medir.",
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "Calibra o fator de escala do manômetro."
+}

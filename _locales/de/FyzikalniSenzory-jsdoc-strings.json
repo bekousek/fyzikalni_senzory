@@ -1,0 +1,16 @@
+{
+    "FyzikalniSenzory.zmeritTeplotu": "Misst die Temperatur mit dem DS18B20-Sensor.",
+    "FyzikalniSenzory.zmeritTeplotuAGraf": "Misst die Temperatur und sendet Daten an die serielle Schnittstelle zur Diagrammerstellung.",
+    "FyzikalniSenzory.zmeritSilu": "Misst die Kraft mit dem HX711-Wägezellenverstärker. Verwendet einen Medianfilter.",
+    "FyzikalniSenzory.zmeritSiluAGraf": "Misst die Kraft und sendet Daten an die serielle Schnittstelle zur Diagrammerstellung.",
+    "FyzikalniSenzory.tarovatSilomer": "Nullt den Kraftmesser (Tara). Vor dem Messen aufrufen.",
+    "FyzikalniSenzory.nastavitMeritko": "Kalibriert den Skalierungsfaktor des Kraftmessers.",
+    "FyzikalniSenzory.zmeritVzdalenost": "Misst die Entfernung mit dem Ultraschallsensor HC-SR04.",
+    "FyzikalniSenzory.zmeritVzdalenostAGraf": "Misst die Entfernung und sendet Daten an die serielle Schnittstelle zur Diagrammerstellung.",
+    "FyzikalniSenzory.zmeritRychlost": "Berechnet die Geschwindigkeit aus aufeinanderfolgenden Entfernungsmessungen.",
+    "FyzikalniSenzory.zmeritRychlostAGraf": "Berechnet die Geschwindigkeit und sendet Daten an die serielle Schnittstelle zur Diagrammerstellung.",
+    "FyzikalniSenzory.zmeritTlak": "Misst den Druck mit dem HX710B-Sensor.",
+    "FyzikalniSenzory.zmeritTlakAGraf": "Misst den Druck und sendet Daten an die serielle Schnittstelle zur Diagrammerstellung.",
+    "FyzikalniSenzory.tarovatTlakomer": "Nullt den Druckmesser (Tara). Vor dem Messen aufrufen.",
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "Kalibriert den Skalierungsfaktor des Druckmessers."
+}

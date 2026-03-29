@@ -1,0 +1,16 @@
+{
+    "FyzikalniSenzory.zmeritTeplotu": "Measures temperature using the DS18B20 sensor.",
+    "FyzikalniSenzory.zmeritTeplotuAGraf": "Measures temperature and sends data to serial port for graphing.",
+    "FyzikalniSenzory.zmeritSilu": "Measures force using the HX711 load cell amplifier. Uses a median filter.",
+    "FyzikalniSenzory.zmeritSiluAGraf": "Measures force and sends data to serial port for graphing.",
+    "FyzikalniSenzory.tarovatSilomer": "Zeros the force meter (tare). Call this before measuring.",
+    "FyzikalniSenzory.nastavitMeritko": "Calibrates the force meter scale factor.",
+    "FyzikalniSenzory.zmeritVzdalenost": "Measures distance using the HC-SR04 ultrasonic sensor.",
+    "FyzikalniSenzory.zmeritVzdalenostAGraf": "Measures distance and sends data to serial port for graphing.",
+    "FyzikalniSenzory.zmeritRychlost": "Calculates speed from consecutive distance measurements.",
+    "FyzikalniSenzory.zmeritRychlostAGraf": "Calculates speed and sends data to serial port for graphing.",
+    "FyzikalniSenzory.zmeritTlak": "Measures pressure using the HX710B sensor.",
+    "FyzikalniSenzory.zmeritTlakAGraf": "Measures pressure and sends data to serial port for graphing.",
+    "FyzikalniSenzory.tarovatTlakomer": "Zeros the pressure gauge (tare). Call this before measuring.",
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "Calibrates the pressure gauge scale factor."
+}

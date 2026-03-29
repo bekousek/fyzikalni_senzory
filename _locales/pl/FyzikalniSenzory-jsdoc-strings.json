@@ -1,0 +1,16 @@
+{
+    "FyzikalniSenzory.zmeritTeplotu": "Mierzy temperaturę za pomocą czujnika DS18B20.",
+    "FyzikalniSenzory.zmeritTeplotuAGraf": "Mierzy temperaturę i wysyła dane na port szeregowy do rysowania wykresu.",
+    "FyzikalniSenzory.zmeritSilu": "Mierzy siłę za pomocą wzmacniacza tensometrycznego HX711. Używa filtru medianowego.",
+    "FyzikalniSenzory.zmeritSiluAGraf": "Mierzy siłę i wysyła dane na port szeregowy do rysowania wykresu.",
+    "FyzikalniSenzory.tarovatSilomer": "Zeruje siłomierz (tara). Wywołaj przed pomiarem.",
+    "FyzikalniSenzory.nastavitMeritko": "Kalibruje współczynnik skali siłomierza.",
+    "FyzikalniSenzory.zmeritVzdalenost": "Mierzy odległość za pomocą czujnika ultradźwiękowego HC-SR04.",
+    "FyzikalniSenzory.zmeritVzdalenostAGraf": "Mierzy odległość i wysyła dane na port szeregowy do rysowania wykresu.",
+    "FyzikalniSenzory.zmeritRychlost": "Oblicza prędkość z kolejnych pomiarów odległości.",
+    "FyzikalniSenzory.zmeritRychlostAGraf": "Oblicza prędkość i wysyła dane na port szeregowy do rysowania wykresu.",
+    "FyzikalniSenzory.zmeritTlak": "Mierzy ciśnienie za pomocą czujnika HX710B.",
+    "FyzikalniSenzory.zmeritTlakAGraf": "Mierzy ciśnienie i wysyła dane na port szeregowy do rysowania wykresu.",
+    "FyzikalniSenzory.tarovatTlakomer": "Zeruje manometr (tara). Wywołaj przed pomiarem.",
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "Kalibruje współczynnik skali manometru."
+}

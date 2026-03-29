@@ -1,0 +1,16 @@
+{
+    "FyzikalniSenzory.zmeritTeplotu": "Mesure la température avec le capteur DS18B20.",
+    "FyzikalniSenzory.zmeritTeplotuAGraf": "Mesure la température et envoie les données au port série pour tracer le graphique.",
+    "FyzikalniSenzory.zmeritSilu": "Mesure la force avec l'amplificateur de cellule de charge HX711. Utilise un filtre médian.",
+    "FyzikalniSenzory.zmeritSiluAGraf": "Mesure la force et envoie les données au port série pour tracer le graphique.",
+    "FyzikalniSenzory.tarovatSilomer": "Met à zéro le dynamomètre (tare). Appelez avant de mesurer.",
+    "FyzikalniSenzory.nastavitMeritko": "Calibre le facteur d'échelle du dynamomètre.",
+    "FyzikalniSenzory.zmeritVzdalenost": "Mesure la distance avec le capteur ultrasonique HC-SR04.",
+    "FyzikalniSenzory.zmeritVzdalenostAGraf": "Mesure la distance et envoie les données au port série pour tracer le graphique.",
+    "FyzikalniSenzory.zmeritRychlost": "Calcule la vitesse à partir de mesures de distance consécutives.",
+    "FyzikalniSenzory.zmeritRychlostAGraf": "Calcule la vitesse et envoie les données au port série pour tracer le graphique.",
+    "FyzikalniSenzory.zmeritTlak": "Mesure la pression avec le capteur HX710B.",
+    "FyzikalniSenzory.zmeritTlakAGraf": "Mesure la pression et envoie les données au port série pour tracer le graphique.",
+    "FyzikalniSenzory.tarovatTlakomer": "Met à zéro le manomètre (tare). Appelez avant de mesurer.",
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "Calibre le facteur d'échelle du manomètre."
+}
