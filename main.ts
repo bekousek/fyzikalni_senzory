@@ -1,3 +1,7 @@
+//% weight=104
+//% color=#1B5E20
+//% icon=""
+//% block="Fyzikální senzory"
 namespace FyzikalniSenzory {
 
     export enum RychlostniJednotka {
@@ -29,14 +33,14 @@ namespace FyzikalniSenzory {
     // ==========================================
 
     //% block="změřená teplota (°C) na pinu %pin"
-    //% group="1. Teplota"
+    //% group="1. Teplota (DS18B20)"
     //% weight=100
     export function zmeritTeplotu(pin: DigitalPin): number {
         return dstemp.celsius(pin);
     }
 
     //% block="změřit teplotu a kreslit graf (pin %pin)"
-    //% group="1. Teplota"
+    //% group="1. Teplota (DS18B20)"
     //% weight=99
     export function zmeritTeplotuAGraf(pin: DigitalPin): void {
         let t = zmeritTeplotu(pin);
@@ -52,19 +56,26 @@ namespace FyzikalniSenzory {
     let my_offset = 0;
     let my_scale = -10578;
 
-    let last_dout = DigitalPin.P15;
-    let last_sck = DigitalPin.P16;
+    // Žádost o vynulování siloměru. Vlastní tárování proběhne uvnitř měření.
+    let _tareSilaRequested = false;
 
     //% block="změřená síla (N) | DT %doutPin | SCK %sckPin"
-    //% group="2. Síla"
+    //% group="2. Síla (HX711)"
     //% weight=90
     export function zmeritSilu(doutPin: DigitalPin, sckPin: DigitalPin): number {
-        last_dout = doutPin;
-        last_sck = sckPin;
-
         HX711.SetPIN_DOUT(doutPin);
         HX711.SetPIN_SCK(sckPin);
         HX711.begin();
+
+        // Tárování má přednost a probíhá zde, ve stejném vlákně jako měření,
+        // takže nemůže dojít ke kolizi dvou vláken na sběrnici HX711.
+        if (_tareSilaRequested) {
+            _tareSilaRequested = false;
+            let t: number[] = [];
+            for (let i = 0; i < 5; i++) t.push(HX711.read());
+            t.sort((a, b) => a - b);
+            my_offset = t[2];
+        }
 
         // Medián (3 hodnoty)
         let val1 = HX711.read();
@@ -82,7 +93,7 @@ namespace FyzikalniSenzory {
     }
 
     //% block="změřit sílu a kreslit graf | DT %doutPin | SCK %sckPin"
-    //% group="2. Síla"
+    //% group="2. Síla (HX711)"
     //% weight=89
     export function zmeritSiluAGraf(doutPin: DigitalPin, sckPin: DigitalPin): void {
         let f = zmeritSilu(doutPin, sckPin);
@@ -90,25 +101,19 @@ namespace FyzikalniSenzory {
         basic.pause(50);
     }
 
+    /**
+     * Vynuluje siloměr (tára). Vynulování se spolehlivě provede při nejbližším
+     * měření – funguje i během běžícího grafu, tlačítko stačí stisknout jednou.
+     */
     //% block="vynulovat siloměr (tára)"
-    //% group="2. Síla"
+    //% group="2. Síla (HX711)"
     //% weight=88
     export function tarovatSilomer(): void {
-        HX711.SetPIN_DOUT(last_dout);
-        HX711.SetPIN_SCK(last_sck);
-        HX711.begin();
-
-        let pole: number[] = [];
-        for (let i = 0; i < 5; i++) {
-            pole.push(HX711.read());
-            basic.pause(10);
-        }
-        pole.sort((a, b) => a - b);
-        my_offset = pole[2];
+        _tareSilaRequested = true;
     }
 
     //% block="kalibrovat siloměr (dílků na 1 N): %meritko"
-    //% group="2. Síla"
+    //% group="2. Síla (HX711)"
     //% advanced=true
     export function nastavitMeritko(meritko: number): void {
         if (meritko == 0) meritko = 1;
@@ -128,7 +133,7 @@ namespace FyzikalniSenzory {
      * Změří vzdálenost.
      */
     //% block="změřená vzdálenost v %jednotka | Trig %trigPin | Echo %echoPin"
-    //% group="3. Vzdálenost"
+    //% group="3. Vzdálenost (HC-SR04)"
     //% weight=80
     export function zmeritVzdalenost(jednotka: VzdalenostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
         // Měříme v cm (1 = Centimeters)
@@ -151,7 +156,7 @@ namespace FyzikalniSenzory {
     }
 
     //% block="změřit vzdálenost a kreslit graf v %jednotka | Trig %trigPin | Echo %echoPin"
-    //% group="3. Vzdálenost"
+    //% group="3. Vzdálenost (HC-SR04)"
     //% weight=79
     export function zmeritVzdalenostAGraf(jednotka: VzdalenostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): void {
         let val4 = zmeritVzdalenost(jednotka, trigPin, echoPin);
@@ -171,7 +176,7 @@ namespace FyzikalniSenzory {
      * Vypočítá rychlost. Tento blok sám měří vzdálenost a počítá změnu.
      */
     //% block="změřená rychlost v %jednotka | Trig %trigPin | Echo %echoPin"
-    //% group="4. Rychlost (Pokročilé)"
+    //% group="4. Rychlost (HC-SR04)"
     //% weight=70
     export function zmeritRychlost(jednotka: RychlostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
         // 1. Změříme aktuální data
@@ -209,10 +214,12 @@ namespace FyzikalniSenzory {
         }
     }
 
-    //% block="změřit rychlost a kreslit graf v %jednotka | Trig %trigPin | Echo %echoPin"
-    //% group="4. Rychlost (Pokročilé)"
+    //% block="změřit rychlost a kreslit graf v %jednotka | Trig %trigPin | Echo %echoPin | i graf vzdálenosti %zobrazitVzdalenost"
+    //% zobrazitVzdalenost.shadow="toggleOnOff"
+    //% zobrazitVzdalenost.defl=true
+    //% group="4. Rychlost (HC-SR04)"
     //% weight=69
-    export function zmeritRychlostAGraf(jednotka: RychlostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): void {
+    export function zmeritRychlostAGraf(jednotka: RychlostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin, zobrazitVzdalenost: boolean = true): void {
         // Zavoláme funkci pro rychlost (ta si sama změří i vzdálenost a aktualizuje stav)
         let w = zmeritRychlost(jednotka, trigPin, echoPin);
 
@@ -220,9 +227,11 @@ namespace FyzikalniSenzory {
         if (jednotka == RychlostniJednotka.Ms) serial.writeValue("Rychlost (m/s)", w);
         else serial.writeValue("Rychlost (km/h)", w);
 
-        // A pošleme tam I VZDÁLENOST, abys viděl souvislost (jestli rychlost sedí k pohybu)
-        // Použijeme _lastS, což je hodnota, ze které se rychlost počítala
-        serial.writeValue("Poloha (cm)", _lastS);
+        // Volitelně i vzdálenost. Posíláme _lastS – tu samou hodnotu, ze které
+        // se počítala rychlost, takže oba grafy přesně sedí (bez posunu o pár ms).
+        if (zobrazitVzdalenost) {
+            serial.writeValue("Poloha (cm)", _lastS);
+        }
 
         // ZVÝŠENÁ PAUZA
         basic.pause(200);
@@ -234,24 +243,30 @@ namespace FyzikalniSenzory {
 
     // Vlastní proměnné pro tlak, aby se nehádaly se siloměrem
     let press_offset = 0;
-    // Výchozí měřítko - nutno zkalibrovat! (raw hodnota -> Pa)
-    let press_scale = 100;
+    // Kalibrační měřítko (surová hodnota -> Pa). Předkalibrováno podle
+    // atmosférického tlaku; lze přepsat blokem "kalibrovat tlakoměr".
+    let press_scale = 99.887;
 
-    // Ukládáme piny pro tárování
-    let last_press_dout = DigitalPin.P0;
-    let last_press_sck = DigitalPin.P1;
+    // Žádost o vynulování tlakoměru. Vlastní tárování proběhne uvnitř měření.
+    let _tareTlakRequested = false;
 
     //% block="změřený tlak (%jednotka) | DT %doutPin | SCK %sckPin"
     //% group="5. Tlak (HX710B)"
     //% weight=60
     export function zmeritTlak(jednotka: TlakovaJednotka, doutPin: DigitalPin, sckPin: DigitalPin): number {
-        last_press_dout = doutPin;
-        last_press_sck = sckPin;
-
         // Používáme stejný driver HX711, protokol je shodný
         HX711.SetPIN_DOUT(doutPin);
         HX711.SetPIN_SCK(sckPin);
         HX711.begin();
+
+        // Tárování má přednost a probíhá zde, ve stejném vlákně jako měření.
+        if (_tareTlakRequested) {
+            _tareTlakRequested = false;
+            let t: number[] = [];
+            for (let i = 0; i < 5; i++) t.push(HX711.read());
+            t.sort((a, b) => a - b);
+            press_offset = t[2];
+        }
 
         // Medián (3 hodnoty pro stabilitu)
         let val1 = HX711.read();
@@ -293,21 +308,15 @@ namespace FyzikalniSenzory {
         basic.pause(100);
     }
 
+    /**
+     * Vynuluje tlakoměr (tára). Vynulování se spolehlivě provede při nejbližším
+     * měření – funguje i během běžícího grafu, tlačítko stačí stisknout jednou.
+     */
     //% block="vynulovat tlakoměr (tára)"
     //% group="5. Tlak (HX710B)"
     //% weight=58
     export function tarovatTlakomer(): void {
-        HX711.SetPIN_DOUT(last_press_dout);
-        HX711.SetPIN_SCK(last_press_sck);
-        HX711.begin();
-
-        let pole: number[] = [];
-        for (let i = 0; i < 5; i++) {
-            pole.push(HX711.read());
-            basic.pause(10);
-        }
-        pole.sort((a, b) => a - b);
-        press_offset = pole[2];
+        _tareTlakRequested = true;
     }
 
     //% block="kalibrovat tlakoměr (dílků na 1 Pa): %meritko"

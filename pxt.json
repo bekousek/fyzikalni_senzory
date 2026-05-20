@@ -1,6 +1,6 @@
 {
     "name": "senzory",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "description": "Rozšíření pro výuku fyziky – teploměr (DS18B20), siloměr (HX711), sonar (HC-SR04), tlakoměr (HX710B), vlhkoměr (DHT11)",
     "dependencies": {
         "core": "*",

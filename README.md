@@ -64,7 +64,7 @@ Převodník HX711 vyžaduje dva piny: **DT** (Data) a **SCK** (Clock).
 Jelikož každý tenzometr je jiný a po zapnutí vykazuje "šum", je nutné dodržet tento postup:
 
 1.  **Tárování (Nulování):**
-    V bloku `po stisknutí tlačítka A` **musíte** zavolat blok `vynulovat siloměr (tára)`. Tím se aktuální stav nastaví jako 0 N. Udělejte to poté, co spustíte měření a budete mít siloměr připravený v poloze pro měření.
+    V bloku `po stisknutí tlačítka A` zavolejte blok `vynulovat siloměr (tára)`. Tím se aktuální stav nastaví jako 0 N. Udělejte to poté, co spustíte měření a budete mít siloměr připravený v poloze pro měření. Vynulování proběhne spolehlivě i během běžícího grafu – tlačítko stačí stisknout jednou, není potřeba ho „spamovat".
 
 2.  **Kalibrace (Měřítko):**
     Rozšíření má přednastavenou hodnotu kalibrace pro zavěšování závaží pod bližší závitovou díru. Pokud Vaše měření neodpovídá realitě, nebo chcete zvýšit přesnost, použijte blok `kalibrovat siloměr`.
@@ -97,6 +97,7 @@ $$v = \frac{\Delta s}{\Delta t} = \frac{s_{teď} - s_{minule}}{t_{teď} - t_{min
 * **`změřená vzdálenost`**: Měří vzdálenost v `cm` nebo `m`.
 * **`změřená rychlost`**: Vypočítá rychlost z aktuálního a předchozího měření. Lze volit mezi `m/s` a `km/h`.
 * **Grafy:** Bloky pro grafy (`... a kreslit graf`) automaticky posílají data do počítače.
+* **Přepínač `i graf vzdálenosti`:** Blok `změřit rychlost a kreslit graf` umí vykreslovat zároveň i vzdálenost, aby žáci mohli porovnávat oba grafy. Vzdálenost se bere přímo z hodnoty, ze které se počítá rychlost, takže grafy spolu přesně časově sedí. Když chcete sledovat jen rychlost, přepněte tento přepínač na `OFF`.
 
 Velmi pěknou úlohou pro žáky je nechat je naprogramovat měření okamžité rychlosti. Jedno možné řešení je zde (zapisování na sériový port je to "kreslení grafu"):
 
@@ -121,10 +122,10 @@ Modul HX710B používá stejný komunikační protokol jako HX711 u siloměru �
 Stejně jako siloměr i tlakoměr vrací jen surová "dílková" čísla, která je potřeba převést na fyzikální jednotky:
 
 1.  **Tárování (Nulování):**
-    Blokem `vynulovat tlakoměr (tára)` nastavíte aktuální tlak (typicky okolní atmosférický) jako 0 Pa. Hodí se, když chcete měřit *přetlak* nebo *podtlak* oproti okolí.
+    Blokem `vynulovat tlakoměr (tára)` nastavíte aktuální tlak (typicky okolní atmosférický) jako 0 Pa. Hodí se, když chcete měřit *přetlak* nebo *podtlak* oproti okolí. Vynulování proběhne spolehlivě i během běžícího grafu – tlačítko stačí stisknout jednou.
 
 2.  **Kalibrace (Měřítko):**
-    Blok `kalibrovat tlakoměr` určuje, kolik dílků převodníku odpovídá 1 Pa. Výchozí hodnota je jen orientační – pro skutečné měření v Pascalech je nutné porovnat údaj se známým tlakem a měřítko podle toho upravit.
+    Blok `kalibrovat tlakoměr` určuje, kolik dílků převodníku odpovídá 1 Pa. Rozšíření je předkalibrované podle atmosférického tlaku (ověřeno proti údaji ČHMÚ), takže běžné měření tlaku vzduchu funguje rovnou. Pokud Vám měření přesto nesedí (každý kus čidla je trochu jiný), porovnejte údaj se známým tlakem a měřítko tímto blokem upravte.
 
 ### Použití
 * **`změřený tlak`**: Vrací tlak v jednotkách `Pa`, `hPa` nebo `atm`. Používá mediánový filtr pro potlačení šumu.
