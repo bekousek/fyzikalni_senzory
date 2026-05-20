@@ -12,5 +12,8 @@
     "FyzikalniSenzory.zmeritTlak": "يقيس الضغط باستخدام مستشعر HX710B.",
     "FyzikalniSenzory.zmeritTlakAGraf": "يقيس الضغط ويرسل البيانات إلى المنفذ التسلسلي لرسم الرسم البياني.",
     "FyzikalniSenzory.tarovatTlakomer": "يصفّر مقياس الضغط (وزن فارغ). استدعِ هذا قبل القياس.",
-    "FyzikalniSenzory.nastavitMeritkoTlaku": "يعاير معامل مقياس الضغط."
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "يعاير معامل مقياس الضغط.",
+    "FyzikalniSenzory.zmeritTeplotuDHT": "يقيس درجة حرارة الهواء باستخدام مستشعر DHT11.",
+    "FyzikalniSenzory.zmeritVlhkostDHT": "يقيس الرطوبة النسبية للهواء باستخدام مستشعر DHT11 (قيمة 0–100٪).",
+    "FyzikalniSenzory.zmeritDHTaGraf": "يقيس درجة الحرارة والرطوبة ويرسل البيانات إلى المنفذ التسلسلي للرسم البياني."
 }

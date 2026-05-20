@@ -12,5 +12,8 @@
     "FyzikalniSenzory.zmeritTlak": "Mierzy ciśnienie za pomocą czujnika HX710B.",
     "FyzikalniSenzory.zmeritTlakAGraf": "Mierzy ciśnienie i wysyła dane na port szeregowy do rysowania wykresu.",
     "FyzikalniSenzory.tarovatTlakomer": "Zeruje manometr (tara). Wywołaj przed pomiarem.",
-    "FyzikalniSenzory.nastavitMeritkoTlaku": "Kalibruje współczynnik skali manometru."
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "Kalibruje współczynnik skali manometru.",
+    "FyzikalniSenzory.zmeritTeplotuDHT": "Mierzy temperaturę powietrza za pomocą czujnika DHT11.",
+    "FyzikalniSenzory.zmeritVlhkostDHT": "Mierzy względną wilgotność powietrza za pomocą czujnika DHT11 (wartość 0–100%).",
+    "FyzikalniSenzory.zmeritDHTaGraf": "Mierzy temperaturę i wilgotność oraz wysyła dane do portu szeregowego w celu wykreślenia."
 }

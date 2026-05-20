@@ -125,7 +125,7 @@ Stejně jako siloměr i tlakoměr vrací jen surová "dílková" čísla, která
     Blokem `vynulovat tlakoměr (tára)` nastavíte aktuální tlak (typicky okolní atmosférický) jako 0 Pa. Hodí se, když chcete měřit *přetlak* nebo *podtlak* oproti okolí. Vynulování proběhne spolehlivě i během běžícího grafu – tlačítko stačí stisknout jednou.
 
 2.  **Kalibrace (Měřítko):**
-    Blok `kalibrovat tlakoměr` určuje, kolik dílků převodníku odpovídá 1 Pa. Rozšíření je předkalibrované podle atmosférického tlaku (ověřeno proti údaji ČHMÚ), takže běžné měření tlaku vzduchu funguje rovnou. Pokud Vám měření přesto nesedí (každý kus čidla je trochu jiný), porovnejte údaj se známým tlakem a měřítko tímto blokem upravte.
+    Blok `kalibrovat tlakoměr` určuje, kolik dílků převodníku odpovídá 1 Pa. Rozšíření je předkalibrované dvoubodově – podle atmosférického tlaku (ověřeno proti údaji ČHMÚ) i podle hydrostatického tlaku vodního sloupce – takže měří správně jak absolutní tlak vzduchu, tak (po vynulování na hladině) hydrostatický tlak v kapalině. Pokud Vám měření přesto nesedí (každý kus čidla je trochu jiný), porovnejte údaj se známým tlakem a měřítko tímto blokem upravte.
 
 ### Použití
 * **`změřený tlak`**: Vrací tlak v jednotkách `Pa`, `hPa` nebo `atm`. Používá mediánový filtr pro potlačení šumu.

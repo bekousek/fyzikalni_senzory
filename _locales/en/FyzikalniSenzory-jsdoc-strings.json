@@ -12,5 +12,8 @@
     "FyzikalniSenzory.zmeritTlak": "Measures pressure using the HX710B sensor.",
     "FyzikalniSenzory.zmeritTlakAGraf": "Measures pressure and sends data to serial port for graphing.",
     "FyzikalniSenzory.tarovatTlakomer": "Zeros the pressure gauge (tare). Call this before measuring.",
-    "FyzikalniSenzory.nastavitMeritkoTlaku": "Calibrates the pressure gauge scale factor."
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "Calibrates the pressure gauge scale factor.",
+    "FyzikalniSenzory.zmeritTeplotuDHT": "Measures air temperature using the DHT11 sensor.",
+    "FyzikalniSenzory.zmeritVlhkostDHT": "Measures relative air humidity using the DHT11 sensor (value 0–100%).",
+    "FyzikalniSenzory.zmeritDHTaGraf": "Measures temperature and humidity and sends data to the serial port for graphing."
 }

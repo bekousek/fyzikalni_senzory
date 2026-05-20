@@ -12,5 +12,8 @@
     "FyzikalniSenzory.zmeritTlak": "Mede a pressão com o sensor HX710B.",
     "FyzikalniSenzory.zmeritTlakAGraf": "Mede a pressão e envia dados para a porta serial para plotar o gráfico.",
     "FyzikalniSenzory.tarovatTlakomer": "Zera o manômetro (tara). Chame antes de medir.",
-    "FyzikalniSenzory.nastavitMeritkoTlaku": "Calibra o fator de escala do manômetro."
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "Calibra o fator de escala do manômetro.",
+    "FyzikalniSenzory.zmeritTeplotuDHT": "Mede a temperatura do ar com o sensor DHT11.",
+    "FyzikalniSenzory.zmeritVlhkostDHT": "Mede a humidade relativa do ar com o sensor DHT11 (valor 0–100%).",
+    "FyzikalniSenzory.zmeritDHTaGraf": "Mede a temperatura e a humidade e envia os dados para a porta série para o gráfico."
 }

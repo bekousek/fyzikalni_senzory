@@ -12,5 +12,8 @@
     "FyzikalniSenzory.zmeritTlak": "HX710Bセンサーを使用して気圧を測定します。",
     "FyzikalniSenzory.zmeritTlakAGraf": "気圧を測定し、グラフ描画のためにシリアルポートにデータを送信します。",
     "FyzikalniSenzory.tarovatTlakomer": "気圧計をゼロにします（風袋）。測定前に呼び出してください。",
-    "FyzikalniSenzory.nastavitMeritkoTlaku": "気圧計のスケールファクターを校正します。"
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "気圧計のスケールファクターを校正します。",
+    "FyzikalniSenzory.zmeritTeplotuDHT": "DHT11センサーで空気の温度を測定します。",
+    "FyzikalniSenzory.zmeritVlhkostDHT": "DHT11センサーで空気の相対湿度を測定します（値 0–100%）。",
+    "FyzikalniSenzory.zmeritDHTaGraf": "温度と湿度を測定し、グラフ作成のためにシリアルポートにデータを送信します。"
 }

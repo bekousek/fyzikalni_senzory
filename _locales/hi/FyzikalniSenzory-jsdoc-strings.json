@@ -12,5 +12,8 @@
     "FyzikalniSenzory.zmeritTlak": "HX710B सेंसर का उपयोग करके दबाव मापता है।",
     "FyzikalniSenzory.zmeritTlakAGraf": "दबाव मापता है और ग्राफ बनाने के लिए सीरियल पोर्ट पर डेटा भेजता है।",
     "FyzikalniSenzory.tarovatTlakomer": "दबाव मापक को शून्य करता है (टेयर)। मापने से पहले इसे कॉल करें।",
-    "FyzikalniSenzory.nastavitMeritkoTlaku": "दबाव मापक के स्केल फैक्टर को अंशांकित करता है।"
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "दबाव मापक के स्केल फैक्टर को अंशांकित करता है।",
+    "FyzikalniSenzory.zmeritTeplotuDHT": "DHT11 सेंसर का उपयोग करके वायु तापमान मापता है।",
+    "FyzikalniSenzory.zmeritVlhkostDHT": "DHT11 सेंसर का उपयोग करके सापेक्ष वायु आर्द्रता मापता है (मान 0–100%)।",
+    "FyzikalniSenzory.zmeritDHTaGraf": "तापमान और आर्द्रता मापता है और ग्राफ़ के लिए डेटा सीरियल पोर्ट पर भेजता है।"
 }

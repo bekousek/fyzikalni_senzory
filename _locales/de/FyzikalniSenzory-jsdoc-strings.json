@@ -12,5 +12,8 @@
     "FyzikalniSenzory.zmeritTlak": "Misst den Druck mit dem HX710B-Sensor.",
     "FyzikalniSenzory.zmeritTlakAGraf": "Misst den Druck und sendet Daten an die serielle Schnittstelle zur Diagrammerstellung.",
     "FyzikalniSenzory.tarovatTlakomer": "Nullt den Druckmesser (Tara). Vor dem Messen aufrufen.",
-    "FyzikalniSenzory.nastavitMeritkoTlaku": "Kalibriert den Skalierungsfaktor des Druckmessers."
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "Kalibriert den Skalierungsfaktor des Druckmessers.",
+    "FyzikalniSenzory.zmeritTeplotuDHT": "Misst die Lufttemperatur mit dem DHT11-Sensor.",
+    "FyzikalniSenzory.zmeritVlhkostDHT": "Misst die relative Luftfeuchtigkeit mit dem DHT11-Sensor (Wert 0–100 %).",
+    "FyzikalniSenzory.zmeritDHTaGraf": "Misst Temperatur und Luftfeuchtigkeit und sendet die Daten zum Zeichnen an den seriellen Port."
 }

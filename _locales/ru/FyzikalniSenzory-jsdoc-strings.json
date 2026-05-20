@@ -12,5 +12,8 @@
     "FyzikalniSenzory.zmeritTlak": "Измеряет давление с помощью датчика HX710B.",
     "FyzikalniSenzory.zmeritTlakAGraf": "Измеряет давление и отправляет данные на последовательный порт для построения графика.",
     "FyzikalniSenzory.tarovatTlakomer": "Обнуляет манометр (тара). Вызовите перед измерением.",
-    "FyzikalniSenzory.nastavitMeritkoTlaku": "Калибрует масштабный коэффициент манометра."
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "Калибрует масштабный коэффициент манометра.",
+    "FyzikalniSenzory.zmeritTeplotuDHT": "Измеряет температуру воздуха с помощью датчика DHT11.",
+    "FyzikalniSenzory.zmeritVlhkostDHT": "Измеряет относительную влажность воздуха с помощью датчика DHT11 (значение 0–100%).",
+    "FyzikalniSenzory.zmeritDHTaGraf": "Измеряет температуру и влажность и отправляет данные в последовательный порт для построения графика."
 }

@@ -59,7 +59,8 @@ namespace FyzikalniSenzory {
     // Žádost o vynulování siloměru. Vlastní tárování proběhne uvnitř měření.
     let _tareSilaRequested = false;
 
-    //% block="změřená síla (N) | DT %doutPin | SCK %sckPin"
+    //% block="změřená síla (N) | DT %doutPin SCK %sckPin"
+    //% inlineInputs=true
     //% group="2. Síla (HX711)"
     //% weight=90
     export function zmeritSilu(doutPin: DigitalPin, sckPin: DigitalPin): number {
@@ -92,7 +93,8 @@ namespace FyzikalniSenzory {
         return Math.round(val * 10) / 10;
     }
 
-    //% block="změřit sílu a kreslit graf | DT %doutPin | SCK %sckPin"
+    //% block="změřit sílu a kreslit graf | DT %doutPin SCK %sckPin"
+    //% inlineInputs=true
     //% group="2. Síla (HX711)"
     //% weight=89
     export function zmeritSiluAGraf(doutPin: DigitalPin, sckPin: DigitalPin): void {
@@ -132,7 +134,8 @@ namespace FyzikalniSenzory {
     /**
      * Změří vzdálenost.
      */
-    //% block="změřená vzdálenost v %jednotka | Trig %trigPin | Echo %echoPin"
+    //% block="změřená vzdálenost v %jednotka | Trig %trigPin Echo %echoPin"
+    //% inlineInputs=true
     //% group="3. Vzdálenost (HC-SR04)"
     //% weight=80
     export function zmeritVzdalenost(jednotka: VzdalenostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
@@ -155,7 +158,8 @@ namespace FyzikalniSenzory {
         }
     }
 
-    //% block="změřit vzdálenost a kreslit graf v %jednotka | Trig %trigPin | Echo %echoPin"
+    //% block="změřit vzdálenost a kreslit graf v %jednotka | Trig %trigPin Echo %echoPin"
+    //% inlineInputs=true
     //% group="3. Vzdálenost (HC-SR04)"
     //% weight=79
     export function zmeritVzdalenostAGraf(jednotka: VzdalenostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): void {
@@ -175,7 +179,8 @@ namespace FyzikalniSenzory {
     /**
      * Vypočítá rychlost. Tento blok sám měří vzdálenost a počítá změnu.
      */
-    //% block="změřená rychlost v %jednotka | Trig %trigPin | Echo %echoPin"
+    //% block="změřená rychlost v %jednotka | Trig %trigPin Echo %echoPin"
+    //% inlineInputs=true
     //% group="4. Rychlost (HC-SR04)"
     //% weight=70
     export function zmeritRychlost(jednotka: RychlostniJednotka, trigPin: DigitalPin, echoPin: DigitalPin): number {
@@ -214,7 +219,8 @@ namespace FyzikalniSenzory {
         }
     }
 
-    //% block="změřit rychlost a kreslit graf v %jednotka | Trig %trigPin | Echo %echoPin | i graf vzdálenosti %zobrazitVzdalenost"
+    //% block="změřit rychlost a kreslit graf v %jednotka | Trig %trigPin Echo %echoPin | i graf vzdálenosti %zobrazitVzdalenost"
+    //% inlineInputs=true
     //% zobrazitVzdalenost.shadow="toggleOnOff"
     //% zobrazitVzdalenost.defl=true
     //% group="4. Rychlost (HC-SR04)"
@@ -241,16 +247,19 @@ namespace FyzikalniSenzory {
     // --- 5. TLAK (HX710B) ---
     // ==========================================
 
-    // Vlastní proměnné pro tlak, aby se nehádaly se siloměrem
-    let press_offset = 0;
-    // Kalibrační měřítko (surová hodnota -> Pa). Předkalibrováno podle
-    // atmosférického tlaku; lze přepsat blokem "kalibrovat tlakoměr".
-    let press_scale = 99.887;
+    // Vlastní proměnné pro tlak, aby se nehádaly se siloměrem.
+    // Dvoubodová kalibrace (atmosférický tlak + 7cm vodní sloupec):
+    //   press_scale  = počet dílků převodníku na 1 Pa,
+    //   press_offset = dílková hodnota odpovídající 0 Pa (absolutní tlak).
+    // press_offset přepíše tárování; press_scale platí i po vynulování.
+    let press_offset = -49207364;
+    let press_scale = 581.84;
 
     // Žádost o vynulování tlakoměru. Vlastní tárování proběhne uvnitř měření.
     let _tareTlakRequested = false;
 
-    //% block="změřený tlak (%jednotka) | DT %doutPin | SCK %sckPin"
+    //% block="změřený tlak (%jednotka) | DT %doutPin SCK %sckPin"
+    //% inlineInputs=true
     //% group="5. Tlak (HX710B)"
     //% weight=60
     export function zmeritTlak(jednotka: TlakovaJednotka, doutPin: DigitalPin, sckPin: DigitalPin): number {
@@ -295,7 +304,8 @@ namespace FyzikalniSenzory {
         }
     }
 
-    //% block="změřit tlak a kreslit graf (%jednotka) | DT %doutPin | SCK %sckPin"
+    //% block="změřit tlak a kreslit graf (%jednotka) | DT %doutPin SCK %sckPin"
+    //% inlineInputs=true
     //% group="5. Tlak (HX710B)"
     //% weight=59
     export function zmeritTlakAGraf(jednotka: TlakovaJednotka, doutPin: DigitalPin, sckPin: DigitalPin): void {

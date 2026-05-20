@@ -12,5 +12,8 @@
     "FyzikalniSenzory.zmeritTlak": "HX710B সেন্সর ব্যবহার করে চাপ পরিমাপ করে।",
     "FyzikalniSenzory.zmeritTlakAGraf": "চাপ পরিমাপ করে এবং গ্রাফ আঁকতে সিরিয়াল পোর্টে ডেটা পাঠায়।",
     "FyzikalniSenzory.tarovatTlakomer": "চাপমাপক শূন্য করে (টেয়ার)। পরিমাপের আগে এটি কল করুন।",
-    "FyzikalniSenzory.nastavitMeritkoTlaku": "চাপমাপকের স্কেল ফ্যাক্টর ক্যালিব্রেট করে।"
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "চাপমাপকের স্কেল ফ্যাক্টর ক্যালিব্রেট করে।",
+    "FyzikalniSenzory.zmeritTeplotuDHT": "DHT11 সেন্সর ব্যবহার করে বাতাসের তাপমাত্রা পরিমাপ করে।",
+    "FyzikalniSenzory.zmeritVlhkostDHT": "DHT11 সেন্সর ব্যবহার করে বাতাসের আপেক্ষিক আর্দ্রতা পরিমাপ করে (মান 0–100%)।",
+    "FyzikalniSenzory.zmeritDHTaGraf": "তাপমাত্রা ও আর্দ্রতা পরিমাপ করে এবং গ্রাফের জন্য সিরিয়াল পোর্টে ডেটা পাঠায়।"
 }

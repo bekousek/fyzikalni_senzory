@@ -12,5 +12,8 @@
     "FyzikalniSenzory.zmeritTlak": "Meria tlak pomocou snímača HX710B.",
     "FyzikalniSenzory.zmeritTlakAGraf": "Meria tlak a odosiela údaje na sériový port na kreslenie grafu.",
     "FyzikalniSenzory.tarovatTlakomer": "Vynuluje tlakomer (tára). Zavolajte pred meraním.",
-    "FyzikalniSenzory.nastavitMeritkoTlaku": "Kalibruje mierku tlakomera."
+    "FyzikalniSenzory.nastavitMeritkoTlaku": "Kalibruje mierku tlakomera.",
+    "FyzikalniSenzory.zmeritTeplotuDHT": "Meria teplotu vzduchu pomocou senzora DHT11.",
+    "FyzikalniSenzory.zmeritVlhkostDHT": "Meria relatívnu vlhkosť vzduchu pomocou senzora DHT11 (hodnota 0–100 %).",
+    "FyzikalniSenzory.zmeritDHTaGraf": "Meria teplotu a vlhkosť a posiela dáta na sériový port na vykreslenie grafu."
 }
