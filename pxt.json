@@ -1,11 +1,12 @@
 {
     "name": "senzory",
     "version": "1.2.0",
-    "description": "Rozšíření pro výuku fyziky – teploměr (DS18B20), siloměr (HX711), sonar (HC-SR04), tlakoměr (HX710B)",
+    "description": "Rozšíření pro výuku fyziky – teploměr (DS18B20), siloměr (HX711), sonar (HC-SR04), tlakoměr (HX710B), vlhkoměr (DHT11)",
     "dependencies": {
         "core": "*",
         "microbit-dstemp": "github:bsiever/microbit-dstemp#v0.1.26",
-        "pxt-HX711": "github:daferdur/pxt-myhx711#v1.0.18"
+        "pxt-HX711": "github:daferdur/pxt-myhx711#v1.0.18",
+        "pxt-DHT11_DHT22": "github:alankrantas/pxt-DHT11_DHT22#v0.0.3"
     },
     "files": [
         "main.blocks",

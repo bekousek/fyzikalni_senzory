@@ -317,6 +317,67 @@ namespace FyzikalniSenzory {
         if (meritko == 0) meritko = 1;
         press_scale = meritko;
     }
+
+
+    // ==========================================
+    // --- 6. TEPLOTA A VLHKOST (DHT11) ---
+    // ==========================================
+
+    // Paměť posledního měření. DHT11 zvládne novou hodnotu zhruba jen 1x za sekundu.
+    let _dht_lastQuery = 0;
+    let _dht_lastPin = DigitalPin.P0;
+    let _dht_temp = -999;
+    let _dht_hum = -999;
+
+    // Provede jeden dotaz na DHT11. Pokud na stejném pinu proběhlo měření
+    // před méně než 1,5 s, vrátí uložená data (senzor je pomalý).
+    function _zmeritDHT(pin: DigitalPin): void {
+        if (_dht_lastQuery != 0 && pin == _dht_lastPin
+            && (control.millis() - _dht_lastQuery) < 1500) {
+            return;
+        }
+        dht11_dht22.queryData(DHTtype.DHT11, pin, true, false, false);
+        // Při chybném kontrolním součtu ponecháme poslední platné hodnoty,
+        // aby v grafu nevznikaly nesmyslné výkyvy.
+        if (dht11_dht22.readDataSuccessful()) {
+            _dht_temp = dht11_dht22.readData(dataType.temperature);
+            _dht_hum = dht11_dht22.readData(dataType.humidity);
+        }
+        _dht_lastPin = pin;
+        _dht_lastQuery = control.millis();
+    }
+
+    /**
+     * Změří teplotu vzduchu senzorem DHT11.
+     */
+    //% block="změřená teplota DHT11 (°C) na pinu %pin"
+    //% group="6. Teplota a vlhkost (DHT11)"
+    //% weight=50
+    export function zmeritTeplotuDHT(pin: DigitalPin): number {
+        _zmeritDHT(pin);
+        return _dht_temp;
+    }
+
+    /**
+     * Změří relativní vlhkost vzduchu senzorem DHT11 (hodnota 0–100 %).
+     */
+    //% block="změřená vlhkost vzduchu DHT11 na pinu %pin"
+    //% group="6. Teplota a vlhkost (DHT11)"
+    //% weight=49
+    export function zmeritVlhkostDHT(pin: DigitalPin): number {
+        _zmeritDHT(pin);
+        return _dht_hum;
+    }
+
+    //% block="změřit teplotu a vlhkost (DHT11) a kreslit graf (pin %pin)"
+    //% group="6. Teplota a vlhkost (DHT11)"
+    //% weight=48
+    export function zmeritDHTaGraf(pin: DigitalPin): void {
+        _zmeritDHT(pin);
+        serial.writeValue("Teplota (C)", _dht_temp);
+        serial.writeValue("Vlhkost (%)", _dht_hum);
+        basic.pause(1500);
+    }
 }
 
 namespace InternalSonar {

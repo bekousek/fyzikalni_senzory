@@ -8,7 +8,8 @@ Rozšíření se zaměřuje na robustnost, jednoduchost bloků a přímý fyzik�
 1.  **Teploměr** (DS18B20)
 2.  **Siloměr a Váha** (Tenzometr + HX711)
 3.  **Vzdálenost a Rychlost** (Ultrazvukový senzor HC-SR04)
-4.  **Tlakoměr** (HX710B)
+4.  **Tlakoměr** (Tlakové čidlo + HX710B)
+5.  **Teploměr a Vlhkoměr** (DHT11)
 
 ---
 
@@ -27,7 +28,7 @@ Měření teploty kapalin a vzduchu pomocí vodotěsné sondy.
 ### Zapojení
 Senzor DS18B20 vyžaduje pull-up rezistor (4k7) mezi datovým pinem a napájením (3V).
 
-<img width="824" height="790" alt="Schéma zapojení rezistoru" src="https://github.com/user-attachments/assets/3153f56d-6161-4774-875c-416756711fbe" />
+<img width="500" alt="Schéma zapojení rezistoru" src="https://github.com/user-attachments/assets/3153f56d-6161-4774-875c-416756711fbe" />
 
 * **Černý/Modrý:** GND
 * **Červený:** 3V
@@ -35,8 +36,7 @@ Senzor DS18B20 vyžaduje pull-up rezistor (4k7) mezi datovým pinem a napájení
 
 Osvědčilo se mi rezistor připájet přímo k jednomu z krokodýlů a propojit ho vodičem s druhým krokodýlem. Rezistor se tak schová do "punčochy" krokodýlu a nehrozí, že se někde utrhne.
 
-<img width="4000" height="2252" alt="Fotografie připojeného rezistoru" src="https://github.com/user-attachments/assets/9cd6e67a-8ac1-4d07-834f-77c5b41aad54" />
-
+<img width="600" alt="Fotografie připojeného rezistoru" src="https://github.com/user-attachments/assets/9cd6e67a-8ac1-4d07-834f-77c5b41aad54" />
 
 ### Použití v kódu
 Rozšíření nabízí dva hlavní bloky:
@@ -55,10 +55,10 @@ Převodník HX711 vyžaduje dva piny: **DT** (Data) a **SCK** (Clock).
 
 * **VCC:** 3V
 * **GND:** GND
-* **DT:** Např. P0
-* **SCK:** Např. P1
+* **DT:** Např. P15
+* **SCK:** Např. P16
 
-<!-- TODO: Přidat schéma zapojení siloměru -->
+<!-- TODO: doplnit fotografii / schéma zapojení siloměru -->
 
 ### Kalibrace a Tárování
 Jelikož každý tenzometr je jiný a po zapnutí vykazuje "šum", je nutné dodržet tento postup:
@@ -73,7 +73,7 @@ Jelikož každý tenzometr je jiný a po zapnutí vykazuje "šum", je nutné dod
 
 ### Použití
 * **`změřená síla (N)`**: Vrací sílu s přesností na 1 desetinné místo. Používá mediánový filtr pro odstranění šumu a náhodných výkyvů.
-* **`změřit sílu a kreslit graf`**: Měří spojitě s pauzou 50 ms. 
+* **`změřit sílu a kreslit graf`**: Měří spojitě s pauzou 50 ms.
 
 ---
 
@@ -88,7 +88,6 @@ Senzor HC-SR04 využívá ultrazvuk. Pozor na napájení – některé verze vy�
 * **Trig:** Např. P1
 * **Echo:** Např. P2
 
-
 ### Princip měření rychlosti
 Toto rozšíření nepoužívá průměrování rychlosti, aby byla zachována fyzikální podstata okamžité změny polohy.
 Rychlost se počítá podle vzorce:
@@ -99,38 +98,68 @@ $$v = \frac{\Delta s}{\Delta t} = \frac{s_{teď} - s_{minule}}{t_{teď} - t_{min
 * **`změřená rychlost`**: Vypočítá rychlost z aktuálního a předchozího měření. Lze volit mezi `m/s` a `km/h`.
 * **Grafy:** Bloky pro grafy (`... a kreslit graf`) automaticky posílají data do počítače.
 
-Velmi pěknou úlohou pro žáky je nechat je naprogramovat měření okamžité rychlosti. Jedno možné řešení je zde (zapisování na sériový port je to "kreslení grafu")
+Velmi pěknou úlohou pro žáky je nechat je naprogramovat měření okamžité rychlosti. Jedno možné řešení je zde (zapisování na sériový port je to "kreslení grafu"):
 
-<img width="776" height="592" alt="image" src="https://github.com/user-attachments/assets/e389f808-ba7a-486f-a8a5-9137f75669a9" />
+<img width="600" alt="Příklad programu pro měření okamžité rychlosti" src="https://github.com/user-attachments/assets/e389f808-ba7a-486f-a8a5-9137f75669a9" />
 
 ---
 
-## 4. Tlakoměr (HX710B) 🌬️
-Měření tlaku pomocí převodníku HX710B (protokolově kompatibilní s HX711).
+## 4. Tlakoměr (HX710B) 🎈
+Měření tlaku plynů a kapalin pomocí tlakového čidla s 24bitovým převodníkem HX710B.
 
 ### Zapojení
-Převodník HX710B vyžaduje dva piny: **DT** (Data) a **SCK** (Clock).
+Modul HX710B používá stejný komunikační protokol jako HX711 u siloměru – potřebuje dva piny: **DT** (Data) a **SCK** (Clock).
 
 * **VCC:** 3V
 * **GND:** GND
-* **DT:** Např. P0
+* **DT (OUT):** Např. P0
 * **SCK:** Např. P1
 
-### Kalibrace a Tárování
-Postup je analogický se siloměrem:
+> **Pozor:** Pokud používáte siloměr i tlakoměr zároveň, zapojte každý na **jiné piny**. Tlakoměr má přednastavené piny P0 a P1, siloměr P15 a P16.
 
-1.  **Tárování (Nulování):** Zavolejte blok `vynulovat tlakoměr (tára)` pro nastavení aktuálního stavu jako nulového bodu.
-2.  **Kalibrace:** Pokud měření neodpovídá realitě, použijte blok `kalibrovat tlakoměr` a upravte kalibrační číslo.
+### Kalibrace a Tárování
+Stejně jako siloměr i tlakoměr vrací jen surová "dílková" čísla, která je potřeba převést na fyzikální jednotky:
+
+1.  **Tárování (Nulování):**
+    Blokem `vynulovat tlakoměr (tára)` nastavíte aktuální tlak (typicky okolní atmosférický) jako 0 Pa. Hodí se, když chcete měřit *přetlak* nebo *podtlak* oproti okolí.
+
+2.  **Kalibrace (Měřítko):**
+    Blok `kalibrovat tlakoměr` určuje, kolik dílků převodníku odpovídá 1 Pa. Výchozí hodnota je jen orientační – pro skutečné měření v Pascalech je nutné porovnat údaj se známým tlakem a měřítko podle toho upravit.
 
 ### Použití
-* **`změřený tlak`**: Vrací tlak v `Pa`, `hPa` nebo `atm`. Používá mediánový filtr pro stabilní měření.
-* **`změřit tlak a kreslit graf`**: Automaticky posílá data na sériovou linku pro vykreslení grafu.
+* **`změřený tlak`**: Vrací tlak v jednotkách `Pa`, `hPa` nebo `atm`. Používá mediánový filtr pro potlačení šumu.
+* **`změřit tlak a kreslit graf`**: Měří spojitě s pauzou 100 ms a posílá data do počítače.
+
+> **Tip:** Pro meteorologii se hodí `hPa` (běžný atmosférický tlak je cca 1013 hPa), pro školní pokusy s injekčními stříkačkami spíš `Pa` nebo `atm`.
+
+---
+
+## 5. Teploměr a Vlhkoměr (DHT11) 💧
+Senzor DHT11 měří jediným čidlem současně **teplotu vzduchu** i jeho **relativní vlhkost**. Je ideální pro sledování klimatu ve třídě, pokusy s dýcháním, sušením nebo odpařováním.
+
+### Zapojení
+DHT11 se prodává buď jako samostatné čidlo (3 nebo 4 nožičky), nebo jako hotový modul na destičce. Modul má pull-up rezistor už zabudovaný a zapojuje se nejsnáz.
+
+* **VCC / +:** 3V
+* **GND / -:** GND
+* **DATA / OUT / S:** Libovolný Pin (např. P0)
+
+> **Poznámka:** U holého čidla bez destičky je vhodné mezi datový pin a 3V připojit pull-up rezistor (cca 4k7–10k). Rozšíření navíc zapíná i vnitřní pull-up micro:bitu, takže s modulem na destičce žádný rezistor řešit nemusíte.
+
+### Použití v kódu
+* **`změřená teplota DHT11 (°C)`**: Vrací teplotu vzduchu ve stupních Celsia.
+* **`změřená vlhkost vzduchu DHT11`**: Vrací relativní vlhkost vzduchu (hodnota 0–100, v procentech).
+* **`změřit teplotu a vlhkost a kreslit graf`**: Změří obě veličiny najednou a pošle je na sériovou linku – v grafu uvidíte dvě křivky současně.
+
+> **Poznámka:** DHT11 je pomalý senzor – novou hodnotu zvládne změřit zhruba jen 1x za sekundu. Bloky proto mají zabudovanou paměť: pokud o hodnotu požádáte dříve než po 1,5 s, vrátí poslední změřená data. Díky tomu můžete bez obav volat blok pro teplotu i pro vlhkost hned za sebou. Při neúspěšném čtení (např. špatné spojení) bloky vrátí poslední platnou hodnotu, hned po startu případně hodnotu `-999`.
+
+> **Tip:** DHT11 měří s přesností přibližně ±2 °C a ±5 %. Potřebujete-li přesněji změřit teplotu (zejména kapalin), použijte vodotěsný DS18B20 ze sekce 1.
 
 ---
 
 ## Jak pracovat s grafy
 * **Grafy v reálném čase:** Po nahrání kódu do micro:bitu klikněte v editoru na tlačítko **Zobrazit data Zařízení**. Uvidíte živé grafy měření.
-* POkud chcete s daty pracovat nějak více, vpravo nahoře se dají exportovat jako prostý text, nebo jako csv soubor.
+* Pokud chcete s daty pracovat více, vpravo nahoře se dají exportovat jako prostý text nebo jako csv soubor.
 
 ## Autor
 Vytvořil Ondřej Bek pro potřeby výuky fyziky na ZŠ.
