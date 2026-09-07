@@ -1,5 +1,11 @@
 # Fyzikální Senzory pro micro:bit ⚗️📏
 
+> **📲 Chcete měřit bez programování? Použijte FyzBit → [fyzbit.cz](https://fyzbit.cz/)**
+>
+> [**FyzBit**](https://fyzbit.cz/) je webová aplikace, do které stačí připojit micro:bit kabelem nebo přes Bluetooth. Sama pozná senzor, kreslí graf v reálném čase a umí export do CSV a PDF — bez MakeCode, bez programování a bez instalace.
+>
+> Toto rozšíření níže využijete, když si chcete měření naprogramovat vlastními bloky v MakeCode.
+
 Toto rozšíření je navrženo speciálně pro výuku fyziky na základních a středních školách. Umožňuje jednoduché připojení a měření s levnými, běžně dostupnými senzory.
 
 Rozšíření se zaměřuje na robustnost, jednoduchost bloků a přímý fyzikální výstup vhodný pro školní měření a grafy.
